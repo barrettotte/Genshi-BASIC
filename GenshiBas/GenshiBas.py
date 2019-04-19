@@ -1,4 +1,5 @@
 import GenshiBas.Utils as utils
+import io
 from GenshiBas.Lexer import Lexer
 from GenshiBas.Parser import Parser
 from GenshiBas.Interpreter import Interpreter
@@ -12,6 +13,8 @@ class New:
         self.interpreter = Interpreter()
 
     def get_src_code(self, s, is_file_path):
+        if isinstance(s, io.IOBase):
+            return s.readlines()
         return utils.read_file(s, throw_error=True) if is_file_path else s
 
     def interpret(self, s, is_file_path=False):

@@ -4,7 +4,9 @@ from GenshiBas import GenshiBas
 
 def main():
     genshiBas = GenshiBas.New()
-    f = os.path.join(os.getcwd(), "test0.bas")
-    genshiBas.interpret(f, is_file_path=True)
+    
+    with open('./test.bas', 'r') as f:
+        genshiBas.interpret(f)
+    
 
 if __name__ == "__main__": main()
