@@ -2,10 +2,11 @@
 
 
 ## 原始 BASIC
-Genshi BASIC has x commands and is a stripped down version of Commodore 64 BASICv2 (71 commands)
+Genshi BASIC has x commands and is a simpler version of Commodore 64 BASICv2 (71 commands)
 
 
 Commands
+
 | Command | Description | Syntax |
 | ------- | ----------- | ------ |
 | x       | x           | x      |
