@@ -1,12 +1,12 @@
 import os
-from GenshiBas import GenshiBas
+from GenshiBASIC import GenshiBASIC
 
 
 def main():
-    genshiBas = GenshiBas.New()
+    genshiBas = GenshiBASIC.New()
     
-    with open('./test.bas', 'r') as f:
+    with open('./programs/binary.bas', 'r') as f:
         genshiBas.interpret(f)
-    
+
 
 if __name__ == "__main__": main()

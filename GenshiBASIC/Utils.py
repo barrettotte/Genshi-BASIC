@@ -27,3 +27,12 @@ def read_file(file_path, throw_error=False):
         log("File [" + file_path + "] could not be found.", "ERROR")
     return ""
 
+def printDict(d):
+    for key, val in d.items():
+        print(key + " --- " + str(val))
+
+def getElemByKey(target, key, collection):
+    for elem in collection:
+        if elem[key] == target:
+            return elem
+    return None

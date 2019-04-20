@@ -9,6 +9,6 @@ setup(
     install_requires=[],
     version='0.1',
     license='MIT',
-    description='An interpreter for Genshi BASIC, a custom BASIC based off of Commodore 64 BASICv2',
+    description='An interpreter for Genshi BASIC; A simpler implementation of BASIC based off of Commodore 64 BASICv2',
     long_description=open('README.md').read(),
 )

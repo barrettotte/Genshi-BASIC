@@ -1,8 +1,8 @@
-import GenshiBas.Utils as utils
 import io
-from GenshiBas.Lexer import Lexer
-from GenshiBas.Parser import Parser
-from GenshiBas.Interpreter import Interpreter
+import GenshiBASIC.Utils as utils
+from GenshiBASIC.Lexer import Lexer
+from GenshiBASIC.Parser import Parser
+from GenshiBASIC.Interpreter import Interpreter
 
 class New:
 
