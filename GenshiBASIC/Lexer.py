@@ -1,40 +1,56 @@
 from collections import OrderedDict
 import GenshiBASIC.Constants as constants
 import GenshiBASIC.Utils as utils
+import GenshiBASIC.Warnings as warnings
 
 class Lexer:
     def __init__(self):
-        print("Made Lexer")
-        self.ops = constants.OPERATORS
-        self.cmds = constants.COMMANDS
-        self.puncs = constants.PUNCTUATION
+        self.lexemes = OrderedDict()
+        self.tokens = OrderedDict()
 
     def clean_line(self, s):
-        line = s.lstrip().replace("\n", "").upper()[0:39] # C64 max_col=40
-        for ch in (self.puncs + self.ops):
+        line = s.lstrip().replace("\n", "").upper()
+        if len(line) > constants.COL_LEN: warnings.raise_col_len(s)
+        line = line[0:constants.COL_LEN]
+        for ch in (constants.PUNCTUATION + constants.OPERATORS):
             if ch in line:
                 line = line.replace(ch, " " + ch + " ")
-        return list(filter(None, line.strip().split(" ")))
-                
-    def make_code_dict(self, src_code):
-        code_dict = OrderedDict()
+        return utils.split_and_filter(line)
+
+    def make_lexemes(self, src_code):
+        self.lexemes = OrderedDict()
         for s in src_code:
-            line = self.clean_line(s) 
+            line = self.clean_line(s)
             line_num = line[0]
-            if line_num.isdigit(): # Assume lines starting with non-numeric are invalid, ignore them
-                code_dict[line_num] = line[1:]
-        return code_dict
+            if line_num.isdigit():
+                self.lexemes[line_num] = line[1:]
+                if int(line_num) == constants.MAX_LINES: 
+                    warnings.raise_max_lines(len(src_code)) 
+                    break
+        return self.lexemes
+
+    def classify_lexeme(self, lexeme):
+        for op in constants.OPERATORS: 
+            if lexeme == op: return "OPERATOR"
+        for p in constants.PUNCTUATION: 
+            if lexeme == p:  return "PUNCTUATION"
+        for kw in constants.KEYWORDS: 
+            if lexeme == kw["word"]: return kw["type"]
+        return "LITERAL"
+
+    def make_tokens(self, lexemes_dict):
+        self.tokens = OrderedDict()
+        for line_num, lexemes_list in lexemes_dict.items():
+            self.tokens[line_num] = []
+            for lexeme in lexemes_list:
+                self.tokens[line_num].append({
+                    "type": self.classify_lexeme(lexeme), 
+                    "value": lexeme, 
+                    "line_num": line_num
+                })
+        return self.tokens
 
     def lex(self, src_code):
-        print("Lexing...")
-        code_dict = self.make_code_dict(src_code)
-        
-        # TODO: Remove these debug lines !
-        for k,v in code_dict.items():
-            print(k + "\n" + str(v))
-        print("\n\n")
-        line = "A(I)=N-INT(N/2)*2"
-        print("1100  " + line)
-        print("Tokens  " + str(self.clean_line(line)))
-            
-        
+        self.make_lexemes(src_code)
+        self.make_tokens(self.lexemes)
+        return self.tokens
