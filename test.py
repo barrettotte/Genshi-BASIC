@@ -6,8 +6,11 @@ import GenshiBASIC.Utils as utils
 def main():
     genshiBas = GenshiBASIC.New()
     
-    with open('./programs/factorial.bas', 'r') as f:
+    with open('./programs/test.bas', 'r') as f:
         t = genshiBas.interpret(f)
+        print("------------\n")
+        print(t)
+        print(t.children_str())
         
     #utils.print_dict(t)
 

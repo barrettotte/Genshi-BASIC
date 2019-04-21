@@ -58,7 +58,7 @@ class New:
     def interpret(self, src, is_file_path=False):
         src = self.load_src(src, is_file_path)
         tokens = self.lexer.lex(src)
-        # PARSE ...
+        tree = self.parser.parse(tokens)
         # INTERPRET ...
-        results = tokens # TODO: TMP
+        results = tree
         return results

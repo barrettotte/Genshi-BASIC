@@ -1,8 +1,31 @@
 COL_LEN = 40
 MAX_LINES = 63999
 
-PUNCTUATION = [ "(", ")", ";", ":", ",", ".", "\"" ]
-OPERATORS = [ "+", "-", "/", "*", "^", "=", "<", ">", "<>", "<=", "=<", ">=", "=>" ]
+OPERATORS = [ 
+    { "char": "+",  "type": "BINARY" },
+    { "char": "-",  "type": "BINARY" },
+    { "char": "/",  "type": "BINARY" },
+    { "char": "*",  "type": "BINARY" },
+    { "char": "^",  "type": "BINARY" },
+    { "char": "=",  "type": "EQUALS" },
+    { "char": "<",  "type": "BINARY" },
+    { "char": ">",  "type": "BINARY" },
+    { "char": "<>", "type": "BINARY" },
+    { "char": "<=", "type": "BINARY" },
+    { "char": "=<", "type": "BINARY" },
+    { "char": ">=", "type": "BINARY" },
+    { "char": "=>", "type": "BINARY" }
+]
+
+PUNCTUATION = [ 
+    { "char": "(",  "type": "LEFT_PAREN"  },
+    { "char": ")",  "type": "RIGHT_PAREN" },
+    { "char": ";",  "type": "SEMICOLON"   },
+    { "char": ":",  "type": "COLON"       },
+    { "char": ",",  "type": "COMMA"       },
+    { "char": ".",  "type": "PERIOD"      },
+    { "char": "\"", "type": "QUOTATION"   }
+]
 
 KEYWORDS = [
     { "word": "ABS",    "type": "ONE-PARAM"   },
@@ -17,7 +40,7 @@ KEYWORDS = [
     { "word": "END",    "type": "NO-PARAM"    },
     { "word": "EXP",    "type": "ONE-PARAM"   },
     { "word": "FN",     "type": "FUNCTION"    },
-    { "word": "FOR",    "type": "FOR-DEF"     },
+    { "word": "FOR",    "type": "FOR-START"   },
     { "word": "GOSUB",  "type": "FLOW-CTRL"   },
     { "word": "GOTO",   "type": "FLOW-CTRL"   },
     { "word": "IF",     "type": "IF-DEF"      },
@@ -28,7 +51,7 @@ KEYWORDS = [
     { "word": "LOG",    "type": "ONE-PARAM"   },
     { "word": "MOD",    "type": "OPERATOR"    },
     { "word": "MID$",   "type": "THREE-PARAM" },
-    { "word": "NEXT",   "type": "FOR-DEF"     },
+    { "word": "NEXT",   "type": "FOR-TERM"    },
     { "word": "NOT",    "type": "BOOLEAN"     },
     { "word": "OR",     "type": "OPERATOR"    },
     { "word": "PRINT",  "type": "NO-PARAM"    },

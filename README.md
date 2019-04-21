@@ -26,7 +26,7 @@ genshiBas.interpret('10 PRINT "HELLO GENSHI BASIC"')
 
 # --- Warnings / Exceptions ---
 genshiBas.interpret('../somewhere/missing.bas', is_file_path=True) # Throws FileNotFound exception
-genshiBas.interpret('./test.txt', is_file_path=True) # Throws UserWarning for file extension
+genshiBas.interpret('./test.txt', is_file_path=True) # Raises UserWarning for file extension
 
 # Missing line numbers (raises SyntaxWarning)
 genshiBas.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HELLO WORLD"\n2 A=123
