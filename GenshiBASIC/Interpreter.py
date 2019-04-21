@@ -1,7 +1,7 @@
 class Interpreter:
 
     def __init__(self):
-        print("Made Interpreter") # TODO: Remove this
+        pass
 
-    def interpret(self):
-        print("Interpreting...") # TODO: Remove this
+    def interpret(self, parse_tree):
+        pass

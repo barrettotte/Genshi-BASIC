@@ -1,9 +1,8 @@
 # GenshiBASIC-Interpreter
 
-An interpreter for 原始 (Genshi) BASIC; A primitive implementation of BASIC based off of Commodore 64 BASICv2
+An interpreter for 原始 (Genshi) BASIC; A primitive implementation of BASIC based off of Commodore 64 BASICv2.
 
-This package is primarily for the Genshi BASIC interpreter, but the lexer and parser can also be used separately
-
+This is my first attempt at writing an interpreter.
 
 ## Install
 ```TBD```
@@ -44,9 +43,9 @@ genshiBas.make_lexemes('./test.bas', is_file_path=True) # returns lexemes
 
 
 ## 原始 BASIC
-Genshi BASIC has 41 commands and is a simpler version of Commodore 64 BASICv2 (71 commands).
+Genshi BASIC has 42 commands and is a simpler version of Commodore 64 BASICv2 (71 commands).
 
-Essentially, I stripped out all of the memory manipulation and I/O. Otherwise, 
+Essentially, I stripped out all of the memory manipulation and I/O (except PRINT). Otherwise, 
 I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
 
 These changes objectively make this version of BASIC pretty useless, but this is just meant for education.
@@ -72,6 +71,7 @@ These changes objectively make this version of BASIC pretty useless, but this is
 | DEF     | Defines a function                         | ```DEF FN FTEST(X) = X*3```                  |
 | DIM     | Allocate memory for an array               | ```DIM A$(2,3)```                            |
 | END     | End program execution                      | ```END```                                    |
+| ENDFOR  | Close scope of for loop                    | ```FOR X=1 TO 3: PRINT X: ENDFOR``` -> 1...3 |
 | EXP     | Inverse natural log of numeric; EXP(x)=e^X | ```EXP(-1)``` -> 0.367879441                 |
 | FN      | Executes defined function                  | ```FN FTEST(3)``` -> 9                       |
 | FOR     | Declare a for loop                         | ```FOR X=0 TO 5: PRINT X: NEXT``` -> 0...5   |
@@ -85,7 +85,6 @@ These changes objectively make this version of BASIC pretty useless, but this is
 | LOG     | Natural logarithm of numeric               | ```LOG(10)``` -> 2.30258509                  |
 | MID$    | Substring from numeric to numeric (0-255)  | ```MID$(A$, 1, 3)```                         |
 | MOD     | Modulus of numeric                         | ```4 MOD 3``` -> 1                           |
-| NEXT    | Next iteration of for loop                 | ```FOR X=1 TO 3: PRINT X: NEXT X``` -> 1...3 |
 | NOT     | Boolean NOT                                | ```IF NOT A=1 AND B$<>"TEST" THEN ```        |
 | OR      | Boolean OR                                 | ```4<2 OR 1>9``` -> 0 (false)                |
 | PRINT   | Print to screen. ';' suppress newline      | ```PRINT "HELLO"``` -> "HELLO"               |
@@ -103,15 +102,35 @@ These changes objectively make this version of BASIC pretty useless, but this is
 | TAN     | Tangent of numeric angle (radians)         | ```TAN(1)``` -> 1.55740772                   |
 | THEN    | Second half of if statement                | ```IF $A="" THEN PRINT "EMPTY"```            |
 | TO      | Range keyword in for loop                  | ```FOR X=1 TO 3: PRINT "HELLO"```            |
+| XOR     | Boolean Exclusive OR                       | ```IF $A="" XOR $B="" THEN ...```            |
+
+
+## Notable differences vs Commodore 64 BASICv2
+* As previously mentioned, all memory manipulation and I/O (except ```PRINT```) is stripped out.
+* Added ```XOR``` keyword for exclusive OR operator.
+* Added ```MOD``` keyword for modulus operator.
+* Replaced ```NEXT``` with ```ENDFOR``` to make parsing more intuitive.
+* Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc)
+  * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4```
+* Lines are stripped of whitespace > 1; To retain whitespace in printing use ```SPC(N)```
+
+
+## Assumptions
+* If a ```STEP``` is not specified in ```FOR``` loop, ```STEP``` is set according to range
+  * Ex: ```FOR X=1 TO 3``` -> Assume low to high, ```STEP=1```
+  * Ex: ```FOR X=10 TO 0``` -> Assume high to low, ```STEP=-1```
+* If ```ENDFOR``` is not specified, it is assumed the ```FOR``` loop is a one liner.
 
 
 ## Possible future goals
 * Look into adding **DATA**, **READ**, **INPUT** commands ... might be doable?
+* Better error specification (column number + expression)
 
 
 ## References
 * Making a Python Package https://uoftcoders.github.io/studyGroup/lessons/python/packages/lesson/
-* https://hackernoon.com/lexical-analysis-861b8bfe4cb0
+* Introduction to Lexical Analysis https://hackernoon.com/lexical-analysis-861b8bfe4cb0
+* Compilers and Interpreters Chapter 4 http://flint.cs.yale.edu/cs421/lectureNotes/c04.pdf
 * Commodore 64 BASIC 
   * https://www.c64-wiki.com/wiki/BASIC
   * https://www.c64-wiki.com/wiki/C64-Commands

@@ -10,7 +10,6 @@ def main():
         t = genshiBas.interpret(f)
         print("------------\n")
         print(t)
-        print(t.children_str())
         
     #utils.print_dict(t)
 

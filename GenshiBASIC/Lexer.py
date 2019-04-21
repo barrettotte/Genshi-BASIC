@@ -14,10 +14,8 @@ class Lexer:
         line = s.lstrip().replace("\n", "").upper()
         if len(line) > constants.COL_LEN: warnings.raise_col_len(s)
         line = line[0:constants.COL_LEN]
-        for punc in constants.PUNCTUATION:
-            if punc["char"] in line: line = line.replace(punc["char"], " " + punc["char"] + " ")
-        for op in constants.OPERATORS:
-            if op["char"] in line: line = line.replace(op["char"], " " + op["char"] + " ")
+        for elem in constants.PUNCTUATION + constants.OPERATORS:
+            if elem["char"] in line: line = line.replace(elem["char"], " " + elem["char"] + " ")
         return utils.split_and_filter(line)
 
     def make_lexemes(self, src):
@@ -68,6 +66,5 @@ class Lexer:
         return self.tokens
 
     def lex(self, src):
-        self.make_lexemes(src)
-        self.make_tokens(self.lexemes)
-        return self.tokens
+        return self.make_tokens(self.make_lexemes(src))
+

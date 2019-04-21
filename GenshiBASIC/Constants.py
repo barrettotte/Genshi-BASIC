@@ -51,7 +51,7 @@ KEYWORDS = [
     { "word": "LOG",    "type": "ONE-PARAM"   },
     { "word": "MOD",    "type": "OPERATOR"    },
     { "word": "MID$",   "type": "THREE-PARAM" },
-    { "word": "NEXT",   "type": "FOR-TERM"    },
+    { "word": "ENDFOR", "type": "FOR-END"     },
     { "word": "NOT",    "type": "BOOLEAN"     },
     { "word": "OR",     "type": "OPERATOR"    },
     { "word": "PRINT",  "type": "NO-PARAM"    },
@@ -68,5 +68,6 @@ KEYWORDS = [
     { "word": "TAB",    "type": "ONE-PARAM"   },
     { "word": "TAN",    "type": "ONE-PARAM"   },
     { "word": "THEN",   "type": "IF-DEF"      },
-    { "word": "TO",     "type": "FOR-DEF"     }
+    { "word": "TO",     "type": "FOR-DEF"     },
+    { "word": "XOR",    "type": "BOOLEAN"     }
 ]
