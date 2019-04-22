@@ -58,6 +58,9 @@ class New:
     def make_lexemes(self, src, is_file_path=False):
         return self.lexer.make_lexemes(self.load_src(src, is_file_path))
 
+    def parse(self, src, is_file_path=False):
+        return self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path)))
+
     def interpret(self, src, is_file_path=False):
         src = self.load_src(src, is_file_path)
         tokens = self.lexer.lex(src)
@@ -73,6 +76,8 @@ class New:
             for token in tokens:
                 print("  " + str(token))
 
-    # TODO 
+
+    # TODO:
     #  - Option to return lexemes, tokens, parse tree as dictionary
     #  - Option to return a dictionary containing lexemes, tokens, parse tree
+    #  - Add __str__ returning list of functions

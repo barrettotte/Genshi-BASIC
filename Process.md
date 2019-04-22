@@ -159,7 +159,7 @@ OrderedDict([
   {'type': 'LITERAL', 'lexeme': 'A4', 'literal': 'IDENTIFIER', 'line': '55', 'pos': '(0, 0)'}
   {'type': 'BINARY', 'lexeme': '>', 'literal': 'None', 'line': '55', 'pos': '(0, 0)'}
   {'type': 'LITERAL', 'lexeme': '1', 'literal': 'NUMERIC', 'line': '55', 'pos': '(0, 0)'}
-  {'type': 'IF-DEF', 'lexeme': 'THEN', 'literal': 'None', 'line': '55', 'pos': '(0, 0)'}
+  {'type': 'THEN', 'lexeme': 'THEN', 'literal': 'None', 'line': '55', 'pos': '(0, 0)'}
   {'type': 'NO-PARAM', 'lexeme': 'PRINT', 'literal': 'None', 'line': '55', 'pos': '(0, 0)'}
   {'type': 'QUOTATION', 'lexeme': '"', 'literal': 'None', 'line': '55', 'pos': '(0, 0)'}
   {'type': 'LITERAL', 'lexeme': 'HELLO', 'literal': 'STRING', 'line': '55', 'pos': '(0, 0)'}
@@ -261,7 +261,7 @@ type: ROOT           content:            level: -1    line: -1 children: Node[63
   type: LITERAL        content: A4         level: 0    line: 55 children: Node[0]
   type: BINARY         content: >          level: 0    line: 55 children: Node[0]
   type: LITERAL        content: 1          level: 0    line: 55 children: Node[0]
-  type: IF-DEF         content: THEN       level: 0    line: 55 children: Node[0]
+  type: THEN           content: THEN       level: 0    line: 55 children: Node[0]
   type: NO-PARAM       content: PRINT      level: 0    line: 55 children: Node[0]
   type: QUOTATION      content: "          level: 0    line: 55 children: Node[0]
   type: LITERAL        content: HELLO      level: 0    line: 55 children: Node[0]

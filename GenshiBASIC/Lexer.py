@@ -39,12 +39,14 @@ class Lexer:
             if lexeme == kw["word"]: return kw["type"]
         return "LITERAL"
     
-    def set_token_literals(self, tokens):
+    def prepare_tokens(self, tokens):
         for i in range(len(tokens)):
             token = tokens[i]
             in_quote = False
             if token.literal != None: 
                 continue
+            elif token.token_type == "COMMENT":
+                for j in range(i+1, len(tokens)): tokens[j].token_type = "COMMENT"
             elif token.token_type == "QUOTATION":
                 in_quote = True
                 for j in range(i+1, len(tokens)):
@@ -75,7 +77,7 @@ class Lexer:
             self.tokens[line_num] = []
             for lexeme in lexemes_list:
                 self.tokens[line_num].append(Token(self.classify_lexeme(lexeme), lexeme, line_num))
-            self.set_token_literals(self.tokens[line_num])
+            self.prepare_tokens(self.tokens[line_num])
         return self.tokens
 
     def lex(self, src):

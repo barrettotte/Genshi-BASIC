@@ -67,7 +67,7 @@ KEYWORDS = [
     { "word": "STR$",   "type": "ONE-PARAM"   },
     { "word": "TAB",    "type": "ONE-PARAM"   },
     { "word": "TAN",    "type": "ONE-PARAM"   },
-    { "word": "THEN",   "type": "IF-DEF"      },
+    { "word": "THEN",   "type": "THEN"        },
     { "word": "TO",     "type": "FOR-DEF"     },
     { "word": "XOR",    "type": "BOOLEAN"     }
 ]

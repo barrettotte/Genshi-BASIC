@@ -3,26 +3,29 @@ from GenshiBASIC.Token import Token
 
 class Expression:
     def __init__(self): pass
-    def __str__(self): return ""
+    def __str__(self):  return "Base expression object"
 
 
 class Literal(Expression):
-    def __init__(self, val):
-        if not isinstance(val, (int, float, str)): 
-            raise TypeError("Value of literal can only be of type string, float, or string")
-        self.val = val
+    def __init__(self, literal_token):
+        if not type(literal_token) is Token: raise TypeError("Literal token must be of type Token")
+        self.val = literal_token
     
     def __str__(self):
-        return str(val)
+        return str(self.val)
 
 
 class Grouping(Expression):
-    def __init__(self, exp):
-        if not type(exp) is Expression: raise TypeError("Expression must be of type Expression")
+    def __init__(self, left_paren, exp, right_paren):
+        if not type(left_paren) is Token:  raise TypeError("Left paren must be of type Token")
+        if not type(exp) is Expression:    raise TypeError("Expression must be of type Expression")
+        if not type(right_paren) is Token: raise TypeError("Right paren must be of type Token")
+        self.left_paren = left_paren
         self.exp = exp
+        self.right_paren = right_paren
 
     def __str__(self):
-        return "(" + str(self.exp) + ")"
+        return "( " + str(self.exp) + " )"
 
 
 class Unary(Expression):

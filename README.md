@@ -15,17 +15,17 @@ genshiBas = GenshiBASIC.New()
 # Source code can be passed as string, File, or filepath string (with is_file_path=True)
 
 # --- Interpreter ---
-with open('./test.bas', 'r') as f:
+with open('./programs/test.bas', 'r') as f:
     genshiBas.interpret(f)
 
-genshiBas.interpret('./test.bas', is_file_path=True)
+genshiBas.interpret('./programs/test.bas', is_file_path=True)
 
 genshiBas.interpret('10 PRINT "HELLO GENSHI BASIC"')
 
 
 # --- Warnings / Exceptions ---
 genshiBas.interpret('../somewhere/missing.bas', is_file_path=True) # Throws FileNotFound exception
-genshiBas.interpret('./test.txt', is_file_path=True) # Raises UserWarning for file extension
+genshiBas.interpret('./programs/test.txt', is_file_path=True) # Raises UserWarning for file extension
 
 # Missing line numbers (raises SyntaxWarning)
 genshiBas.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HELLO WORLD"\n2 A=123
@@ -34,10 +34,16 @@ genshiBas.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HELLO
 # --- Lexer ---
 genshiBas.lex('10 PRINT "HELLO WORLD"') # returns tokens
 
-with open('./test.bas', 'r') as f:
+with open('./programs/test.bas', 'r') as f:
     genshiBas.make_tokens(f) # same functionality as lex()
 
-genshiBas.make_lexemes('./test.bas', is_file_path=True) # returns lexemes
+genshiBas.make_lexemes('./programs/test.bas', is_file_path=True) # returns lexemes
+
+
+# --- Parser ---
+genshiBas.parse('10 PRINT "HELLO WORLD"') # returns parse tree
+
+
 
 ```
 
@@ -74,7 +80,7 @@ These changes objectively make this version of BASIC pretty useless, but this is
 | ENDFOR  | Close scope of for loop                    | ```FOR X=1 TO 3: PRINT X: ENDFOR``` -> 1...3 |
 | EXP     | Inverse natural log of numeric; EXP(x)=e^X | ```EXP(-1)``` -> 0.367879441                 |
 | FN      | Executes defined function                  | ```FN FTEST(3)``` -> 9                       |
-| FOR     | Declare a for loop                         | ```FOR X=0 TO 5: PRINT X: NEXT``` -> 0...5   |
+| FOR     | Declare a for loop                         | ```FOR X=0 TO 5: PRINT X: ENDFOR``` -> 0...5 |
 | GOSUB   | Jump to subroutine at line number          | ```GOSUB 1000```                             |
 | GOTO    | Jump to line number                        | ```GOTO 500```                               |
 | IF      | Start if statement                         | ```IF A$="" THEN PRINT "EMPTY"``` -> "EMPTY" |
@@ -119,11 +125,11 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * If a ```STEP``` is not specified in ```FOR``` loop, ```STEP``` is set according to range
   * Ex: ```FOR X=1 TO 3``` -> Assume low to high, ```STEP=1```
   * Ex: ```FOR X=10 TO 0``` -> Assume high to low, ```STEP=-1```
-* If ```ENDFOR``` is not specified, it is assumed the ```FOR``` loop is a one liner.
 
 
 ## Possible future goals
 * Look into adding **DATA**, **READ**, **INPUT** commands ... might be doable?
+* Token column number tracking (begin, end)
 * Better error specification (column number + expression)
 
 
@@ -132,6 +138,7 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * Commodore 64 BASIC 
   * https://www.c64-wiki.com/wiki/BASIC
   * https://www.c64-wiki.com/wiki/C64-Commands
+* Crafting Interpreters https://craftinginterpreters.com/
 * ENBF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
 * Introduction to Lexical Analysis https://hackernoon.com/lexical-analysis-861b8bfe4cb0
 * Making a Python Package https://uoftcoders.github.io/studyGroup/lessons/python/packages/lesson/

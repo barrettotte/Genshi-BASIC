@@ -17,11 +17,9 @@ class Parser:
         parse_tree = Node()
         for n in node_tree.children:
             if not n.node_type in ["FOR-START", "FOR-END", "FOR-DEF"] :
-               pass 
+               print(n) 
+               # TODO: Left off here!
             
-                
-
-
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())
         index = len(tokens)-1
@@ -36,9 +34,9 @@ class Parser:
                     if node_stack.peek().node_type == "FOR-END":
                         break
                 node_stack.push(for_node)
-            else:
+            elif token.token_type != "COMMENT":
                 node_stack.push(self.node_from_token(token, level=nest_lvl))
-                if token.token_type == "FOR-END": nest_lvl += 1
+                if token.token_type == "FOR-END":  nest_lvl += 1
             index -= 1
         if nest_lvl != 0: 
             raise SyntaxError("Missing 'ENDFOR' statement")
