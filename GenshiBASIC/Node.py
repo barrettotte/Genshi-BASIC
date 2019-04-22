@@ -34,17 +34,19 @@ class Node:
         return str(s)
 
     def __str__(self, level=0):
-        s = "   " * self.level + "type: " + self.node_type.ljust(15) + "content: " + self.content.ljust(5)
-        s += "      level: " + str(self.level) + "    line: " + str(self.line) 
+        s = "  " * (self.level+1) + "type: " + self.node_type.ljust(15) + "content: " + self.content.ljust(5)
+        s += "      level: " + str(self.level) + "    line: " + str(self.line)
+        s += " children: Node[" + str(len(self.children)) + "]" + "\n"
+        for child in self.children:
+            s += child.__str__(self.level+2)
+        return s
+
+    def children_str(self, children):
         if self.level >= 0:
             s += "   children: ["
             for child in self.children:
                 s += child.node_type + " "
             s += " ]\n"
-
-        for child in self.children:
-            s += child.__str__(self.level+1)
-        return s
 
     def __repr__(self):
         return str(self)

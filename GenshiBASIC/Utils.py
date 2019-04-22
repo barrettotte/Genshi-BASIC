@@ -31,11 +31,5 @@ def print_dict(d):
     for key, val in d.items():
         print(key + "  " + str(val))
 
-def print_tokens(d):
-    for line_num, tokens in d.items():
-        print(line_num)
-        for token in tokens:
-            print("  " + str(token))
-
 def split_and_filter(s, delim=" ", filt=None, is_strip=True):
     return list(filter(filt, (s.strip() if is_strip else s).split(delim)))

@@ -35,7 +35,7 @@ KEYWORDS = [
     { "word": "CHR$",   "type": "ONE-PARAM"   },
     { "word": "CLR",    "type": "NO-PARAM"    },
     { "word": "COS",    "type": "ONE-PARAM"   },
-    { "word": "DEF",    "type": "FUNCTION"    },
+    { "word": "DEF",    "type": "FUNC-DEF"    },
     { "word": "DIM",    "type": "VAR-DEF"     },
     { "word": "END",    "type": "NO-PARAM"    },
     { "word": "EXP",    "type": "ONE-PARAM"   },

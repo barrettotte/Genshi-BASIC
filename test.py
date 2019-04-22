@@ -8,8 +8,8 @@ def main():
     
     with open('./programs/test.bas', 'r') as f:
         t = genshiBas.interpret(f)
-        print("------------\n")
-        print(t)
+        #print("------------\n")
+        #print(str(t))
         
     #utils.print_dict(t)
 

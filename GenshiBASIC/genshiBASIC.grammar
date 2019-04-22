@@ -1,0 +1,11 @@
+expression -> literal
+            | unary
+            | binary
+            | grouping ;
+
+literal    -> NUMERIC | STRING ;
+grouping   -> "(" expression ")" ;
+unary      -> ( "-" | "NOT" ) expression ;
+binary     -> expression operator expression ;
+operator   -> "=" | "-" | "+" | "/" | "*" | "^" | ">" | "<"
+            | "<=" | "=>" | ">=" | "=>" | "<>"

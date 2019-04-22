@@ -41,20 +41,33 @@ class Lexer:
     
     def set_token_literals(self, tokens):
         for i in range(len(tokens)):
-            if tokens[i].literal == None:
-                if tokens[i].token_type == "QUOTATION":
-                    for j in range(i+1, len(tokens)):
-                        if tokens[j].token_type == "QUOTATION":
-                            for x in range(i+1, j):
-                                tokens[x].literal = "STRING"
-                            break
-                elif tokens[i].token_type == "LITERAL":
-                    if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
-                        tokens[i].literal = "IDENTIFIER"
-                    elif i > 0 and tokens[i-1].lexeme == "NEXT":
-                        tokens[i].literal = "IDENTIFIER"
-                    else:
-                        tokens[i].literal = "NUMERIC" if tokens[i].lexeme.isdigit() else "IDENTIFIER" 
+            token = tokens[i]
+            in_quote = False
+            if token.literal != None: 
+                continue
+            elif token.token_type == "QUOTATION":
+                in_quote = True
+                for j in range(i+1, len(tokens)):
+                    if tokens[j].token_type == "QUOTATION":
+                        in_quote = False
+                        for x in range(i+1, j): tokens[x].literal = "STRING"
+                        break
+                if j+1 == len(tokens): break
+            elif token.token_type == "LITERAL":
+                if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
+                    token.literal = "IDENTIFIER"
+                elif i > 0 and tokens[i-1].lexeme == "NEXT":
+                    token.literal = "IDENTIFIER"
+                else:
+                    token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER" 
+        if in_quote: 
+            raise SyntaxError("Non-terminated string; line: " + self.tokens_to_line(tokens))
+
+    def tokens_to_line(self, tokens):
+        line = str(tokens[0].line)
+        for t in tokens:
+            line += " " + t.lexeme
+        return line
 
     def make_tokens(self, lexemes_dict):
         self.tokens = OrderedDict()
@@ -62,7 +75,7 @@ class Lexer:
             self.tokens[line_num] = []
             for lexeme in lexemes_list:
                 self.tokens[line_num].append(Token(self.classify_lexeme(lexeme), lexeme, line_num))
-                self.set_token_literals(self.tokens[line_num])
+            self.set_token_literals(self.tokens[line_num])
         return self.tokens
 
     def lex(self, src):

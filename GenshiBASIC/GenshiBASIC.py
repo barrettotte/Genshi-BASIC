@@ -66,6 +66,13 @@ class New:
         results = tree
         return results
 
+    
+    def print_tokens(self, tokens_dict):
+        for line_num, tokens in tokens_dict.items():
+            print(line_num)
+            for token in tokens:
+                print("  " + str(token))
+
     # TODO 
     #  - Option to return lexemes, tokens, parse tree as dictionary
     #  - Option to return a dictionary containing lexemes, tokens, parse tree

@@ -128,10 +128,11 @@ These changes objectively make this version of BASIC pretty useless, but this is
 
 
 ## References
-* Making a Python Package https://uoftcoders.github.io/studyGroup/lessons/python/packages/lesson/
-* Introduction to Lexical Analysis https://hackernoon.com/lexical-analysis-861b8bfe4cb0
 * Compilers and Interpreters Chapter 4 http://flint.cs.yale.edu/cs421/lectureNotes/c04.pdf
 * Commodore 64 BASIC 
   * https://www.c64-wiki.com/wiki/BASIC
   * https://www.c64-wiki.com/wiki/C64-Commands
+* ENBF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+* Introduction to Lexical Analysis https://hackernoon.com/lexical-analysis-861b8bfe4cb0
+* Making a Python Package https://uoftcoders.github.io/studyGroup/lessons/python/packages/lesson/
 * Web BASIC interpreter https://yohan.es/swbasic/
