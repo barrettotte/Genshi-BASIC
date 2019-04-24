@@ -6,7 +6,7 @@ import GenshiBASIC.Utils as utils
 def main():
     genshiBas = GenshiBASIC.New()
     
-    with open('./programs/test.bas', 'r') as f:
+    with open('./programs/functions.bas', 'r') as f:
         t = genshiBas.interpret(f)
         #print("------------\n")
         #print(str(t))

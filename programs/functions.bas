@@ -1,0 +1,1 @@
+1  DEF FN FTEST(X) = X*3

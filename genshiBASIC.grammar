@@ -22,7 +22,7 @@ arguments   -> expression ( "," expression )* ;
 
 declaration -> func_dec | var_dec | arr_dec | statement ;
 
-arr_dec     -> array_stmt  -> "DIM" IDENTIFIER "(" arguments ")" ;
+arr_dec     -> "DIM" IDENTIFIER "(" arguments ")" ;
 func_dec    -> "DEF" "FN" IDENTIFIER "(" parameters? ")" "=" expression ;
 var_dec     -> ( IDENTIFIER | "LET" IDENTIFIER) "=" expression ;
 

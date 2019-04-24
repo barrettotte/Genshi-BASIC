@@ -17,11 +17,13 @@ class Node:
 
     def add_child(self, child, as_token=False):
         if as_token:
-            child = Node(child.token_type, child.lexeme, child.line, [], self.level)
+            child = Node(child.token_type, child.lexeme, child.line, [], self.level+1)
+        child.level += 1
         self.children.append(child)
 
     def add_children(self, other):
-        self.children += other
+        for o in other:
+            self.add_child(o)
 
     def __str__(self):
         s = { 
@@ -34,7 +36,7 @@ class Node:
         return str(s)
 
     def __str__(self, level=0):
-        s = "  " * (self.level+1) + "type: " + self.node_type.ljust(15) + "content: " + self.content.ljust(5)
+        s = "  " * (self.level+1) + "type: " + self.node_type.ljust(15) + "content: " + str(self.content).ljust(5)
         s += "      level: " + str(self.level) + "    line: " + str(self.line)
         s += " children: Node[" + str(len(self.children)) + "]" + "\n"
         for child in self.children:
@@ -50,4 +52,3 @@ class Node:
 
     def __repr__(self):
         return str(self)
-

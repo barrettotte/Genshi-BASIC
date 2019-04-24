@@ -76,8 +76,9 @@ class New:
             for token in tokens:
                 print("  " + str(token))
 
-
     # TODO:
     #  - Option to return lexemes, tokens, parse tree as dictionary
     #  - Option to return a dictionary containing lexemes, tokens, parse tree
     #  - Add __str__ returning list of functions
+    #  - LEXER: Line number could probably be negative? Check and throw
+    #  - If line is empty (parsing a REM), exclude from lines
