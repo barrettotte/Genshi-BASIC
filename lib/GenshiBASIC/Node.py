@@ -25,19 +25,9 @@ class Node:
         for o in other:
             self.add_child(o)
 
-    def __str__(self):
-        s = { 
-            "type": self.node_type,
-            "content": self.content,
-            "line": self.line,
-            "children": "Node[" + str(len(self.children)) + "]",
-            "level": self.level
-        }
-        return str(s)
-
     def __str__(self, level=0):
-        s = "  " * (self.level+1) + "type: " + self.node_type.ljust(15) + "content: " + str(self.content).ljust(5)
-        s += "      level: " + str(self.level) + "    line: " + str(self.line)
+        s = "  " * (self.level+1) + "type: " + self.node_type.ljust(20) + "content: " + str(self.content).ljust(10)
+        s += "      level: " + str(self.level).ljust(10) + "    line: " + str(self.line)
         s += " children: Node[" + str(len(self.children)) + "]" + "\n"
         for child in self.children:
             s += child.__str__(self.level+2)

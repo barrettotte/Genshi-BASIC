@@ -27,10 +27,11 @@ class New:
         lines = src.split("\n") if not type(src) is list else src
         for i in range(len(lines)):
             split = utils.split_and_filter(lines[i])
-            if not split[0].isdigit():
+            if len(split) > 0 and not split[0].isdigit():
                 warnings.raise_missing_linenum(lines[i])
                 lines[i] = str(i+1) + " " + lines[i]
-            prepped.append(lines[i])
+            if len(lines[i]) > 0:
+                prepped.append(lines[i])
         return prepped
 
     def load_src(self, src, is_file_path=False):

@@ -24,7 +24,7 @@ declaration -> func_dec | var_dec | arr_dec | statement ;
 
 arr_dec     -> "DIM" IDENTIFIER "(" arguments ")" ;
 func_dec    -> "DEF" "FN" IDENTIFIER "(" parameters? ")" "=" expression ;
-var_dec     -> ( IDENTIFIER | "LET" IDENTIFIER) "=" expression ;
+var_dec     -> "LET" IDENTIFIER "=" expression ;
 
 statement   -> for_stmt | func_stmt | go_stmt | if_stmt | print_stmt ;
 

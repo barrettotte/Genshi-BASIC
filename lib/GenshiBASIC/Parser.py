@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from GenshiBASIC.Expression import Expression, Binary_Exp, Grouping_Exp, Unary_Exp, Literal_Exp
+from GenshiBASIC.Expression import *
 from GenshiBASIC.Node import Node
 from GenshiBASIC.Stack import Stack
 from GenshiBASIC.Token import Token
@@ -28,8 +28,8 @@ class Parser:
         return lines
 
     def parse_expression(self, node_stack, line):
-        print("DEBUG Parsing Expression for line " + line) # TODO: DEBUG
         while not node_stack.is_empty():
+            # ---- BINARY EXPRESSION ---- #
             if node_stack.peek().node_type == "IDENTIFIER":
                 left = Literal_Exp(node_stack.pop())
                 if node_stack.peek().node_type == "BINARY":
@@ -40,17 +40,35 @@ class Parser:
                             return Binary_Exp(left, op, right)
                         else:
                             raise SyntaxError("Expected end of expression on line " + line)
+            # ---- GROUPING EXPRESSION ---- #
+            # ---- UNARY EXPRESSION ---- #
+            # ---- LITERAL EXPRESSION ---- #
             else:
                 print("DEBUG break parse_expression()") # TODO: DEBUG
                 break
 
+    def statement_str(self, statement):
+        s = statement.line + " "
+        for n in statement.children:
+            s += str(n.content) + " "
+        return s
+
+    def syntax_err(self, expected, line, statement, context=""):
+        stmt = self.statement_str(statement)
+        stmt_len = len("SyntaxError: " + stmt)
+        msg = "Expected " + expected
+        if context != "": msg += " for " + context
+        msg += " on line " + line
+        raise SyntaxError(stmt + "\n" + (" "*stmt_len) + "^^^^^\n  " + msg + "\n")
+
     def make_parse_tree(self, node_tree):
         parse_tree = Node()
         node_stack = Stack(Node())
-        statement = Node("STATEMENT", level=0)
+        
         lines = self.node_tree_to_lines(node_tree)
 
         for line, nodes in lines.items():
+            statement = Node("STATEMENT", line=line, level=0)
             for i in reversed(range(len(nodes))):
                 node_stack.push(nodes[i])
             while not node_stack.is_empty():
@@ -61,32 +79,39 @@ class Parser:
                         if node_stack.peek().node_type == "IDENTIFIER":
                             statement.add_child(node_stack.pop())
                             if node_stack.peek().node_type == "LEFT_PAREN":
+                                exp = self.parse_expression(node_stack, line)
                                 statement.add_child(node_stack.pop())
                                 while not node_stack.is_empty() and node_stack.peek().node_type != "RIGHT_PAREN":
                                     if node_stack.peek().node_type == "IDENTIFIER":
                                         statement.add_child(node_stack.pop())
+                                        if node_stack.peek().node_type == "IDENTIFIER":
+                                            self.syntax_err("','", line, statement, context="Function declaration")
+                                    elif node_stack.peek().node_type == "COMMA":
+                                        statement.add_child(node_stack.pop())
+                                        if node_stack.peek().node_type == "COMMA":
+                                            self.syntax_err("identifier", line, statement, context="Function declaration")
                                     else:
-                                        raise SyntaxError("Expected ',' or identifier on line " + line)
+                                        self.syntax_err("',' or identifier", line, statement, context="Function declaration")
                                 if node_stack.peek().node_type != "RIGHT_PAREN":
-                                    raise SyntaxError("Expected ')' for Function declaration on line " + line)
+                                    self.syntax_err("')'", line, statement, context="Function declaration")
                                 statement.add_child(node_stack.pop())
                                 if node_stack.peek().node_type == "EQUALS":
                                     statement.add_child(node_stack.pop())
-                                    expression = self.parse_expression(node_stack, line)
-                                    statement.add_child(expression)
+                                    exp = self.parse_expression(node_stack, line)
+                                    statement.add_child(Expression_Node(exp, line=line))
                                 else:
-                                    raise SyntaxError("Expected '=' for Function declaration on line " + line)
+                                    self.syntax_err("'='", line, statement, context="Function declaration")
                             else:
-                                raise SyntaxError("Expected '(' for Function declaration on line " + line)
+                                self.syntax_err("'('", line, statement, context="Function declaration")
                         else:
-                            raise SyntaxError("Expected identifier for Function declaration on line " + line)
+                            self.syntax_err("identifier", line, statement, context="Function declaration")
                     else:
-                        raise SyntaxError("Expected 'FN' for Function declaration on line " + line)
-
+                        self.syntax_err("'FN'", line, statement, context="Function declaration")
                 else:
                     print("DEBUG break make_parse_tree()") # TODO: DEBUG
-            print("DEBUG break make_parse_tree() only line 1 for now!") # TODO: DEBUG
-        print(statement)
+            print("\n")
+            print(statement)
+            print(self.statement_str(statement))
         
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())

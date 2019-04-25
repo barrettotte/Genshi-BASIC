@@ -11,8 +11,9 @@ class Lexer:
         self.tokens = OrderedDict()
 
     def clean_line(self, s):
-        line = s.lstrip().replace("\n", "").upper()
-        if len(line) > constants.COL_LEN: warnings.raise_col_len(s)
+        line = s.lstrip().replace("\n", "").replace("\r", "").upper()
+        if len(line) > constants.COL_LEN: 
+            warnings.raise_col_len(s)
         line = line[0:constants.COL_LEN]
         for elem in constants.PUNCTUATION + constants.OPERATORS:
             if elem["char"] in line: line = line.replace(elem["char"], " " + elem["char"] + " ")
@@ -22,7 +23,7 @@ class Lexer:
         self.lexemes = OrderedDict()
         for s in src:
             line = self.clean_line(s)
-            line_num = line[0]
+            line_num = line[0] if len(line) > 0 else ""
             if line_num.isdigit():
                 self.lexemes[line_num] = line[1:]
                 if int(line_num) == constants.MAX_LINES: 

@@ -168,7 +168,7 @@ OrderedDict([
 
 
 
-## Build node tree ```Parser.py```
+## Build basic node tree for handling nesting ```Parser.py```
 ```
 type: ROOT           content:            level: -1    line: -1 children: Node[63]
   type: FUNC-DEF       content: DEF        level: 0    line: 1 children: Node[0]
@@ -266,4 +266,10 @@ type: ROOT           content:            level: -1    line: -1 children: Node[63
   type: QUOTATION      content: "          level: 0    line: 55 children: Node[0]
   type: LITERAL        content: HELLO      level: 0    line: 55 children: Node[0]
   type: QUOTATION      content: "          level: 0    line: 55 children: Node[0]
+```
+
+
+## Parse nodes into expressions based on grammar rules ```Parser.py```
+```
+
 ```
