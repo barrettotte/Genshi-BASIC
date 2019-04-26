@@ -1,4 +1,4 @@
-from GenshiBASIC.Token import Token
+from Token import Token
 
 class Node:
 

@@ -1,9 +1,9 @@
 from collections import OrderedDict
-from GenshiBASIC.Expression import *
-from GenshiBASIC.Node import Node
-from GenshiBASIC.Stack import Stack
-from GenshiBASIC.Token import Token
-import GenshiBASIC.Utils as utils
+from Expression import *
+from Node import Node
+from Stack import Stack
+from Token import Token
+import Utils as utils
 
 class Parser:
 
@@ -28,6 +28,7 @@ class Parser:
         return lines
 
     def parse_expression(self, node_stack, line):
+        print("!!!!!!!!!!!")
         while not node_stack.is_empty():
             # ---- BINARY EXPRESSION ---- #
             if node_stack.peek().node_type == "IDENTIFIER":
@@ -36,6 +37,8 @@ class Parser:
                     op = node_stack.pop()
                     if node_stack.peek().node_type == "IDENTIFIER" or node_stack.peek().node_type == "LITERAL":
                         right = Literal_Exp(node_stack.pop())
+                        print("!!!")
+                        print(node_stack.as_list())
                         if node_stack.is_empty():
                             return Binary_Exp(left, op, right)
                         else:

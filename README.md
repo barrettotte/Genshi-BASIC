@@ -4,6 +4,40 @@ An interpreter for 原始 (Genshi) BASIC; A primitive implementation of BASIC ba
 
 This is my first attempt at writing an interpreter.
 
+
+## Progress
+- [ ] Lexer
+  - [x] File or string to lexemes
+  - [x] Lexemes to tokens
+  - [x] Basic warnings
+  - [ ] Unit testing
+- [ ] Parser
+  - [x] Grammar rules
+  - [x] Node tree (nesting)
+  - [x] Expressions (Binary, Unary, Grouping, Literal)
+  - [ ] Syntax errors
+  - [ ] Declarations
+    - [ ] Function declaration
+    - [ ] Array declaration
+    - [ ] Variable declaration
+  - [ ] Statments
+    - [ ] For statement
+    - [ ] Function statement
+    - [ ] Go statement
+    - [ ] If statement
+    - [ ] Print statement
+  - [ ] Unit testing
+- [ ] Interpreter
+  - [ ] TBD
+  - [ ] Unit testing
+- [ ] Misc
+  - [ ] Documentation
+  - [x] Package setup
+  - [ ] Run in Docker
+  - [ ] CI with GitLab
+  - [ ] CD to PyPi
+
+
 ## Install
 ```TBD```
 
@@ -44,6 +78,9 @@ genshiBas.make_lexemes('./programs/test.bas', is_file_path=True) # returns lexem
 genshiBas.parse('10 PRINT "HELLO WORLD"') # returns parse tree
 
 
+# --- Interpreter ---
+
+# TBD
 
 ```
 

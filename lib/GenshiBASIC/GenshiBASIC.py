@@ -1,10 +1,10 @@
 import io
-import GenshiBASIC.Constants as constants
-import GenshiBASIC.Utils as utils
-import GenshiBASIC.Warnings as warnings
-from GenshiBASIC.Lexer import Lexer
-from GenshiBASIC.Parser import Parser
-from GenshiBASIC.Interpreter import Interpreter
+import Constants as constants
+import Utils as utils
+import Warnings as warnings
+from Lexer import Lexer
+from Parser import Parser
+from Interpreter import Interpreter
 
 class New:
 
@@ -65,9 +65,9 @@ class New:
     def interpret(self, src, is_file_path=False):
         src = self.load_src(src, is_file_path)
         tokens = self.lexer.lex(src)
-        tree = self.parser.parse(tokens)
+        parse_tree = self.parser.parse(tokens)
         # INTERPRET ...
-        results = tree
+        results = parse_tree
         return results
 
     
@@ -83,3 +83,4 @@ class New:
     #  - Add __str__ returning list of functions
     #  - LEXER: Line number could probably be negative? Check and throw
     #  - If line is empty (parsing a REM), exclude from lines
+    #  - Lex literals in quotes as 'STRING', remove quotation nodes

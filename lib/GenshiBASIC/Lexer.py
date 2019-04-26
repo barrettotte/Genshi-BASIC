@@ -1,8 +1,8 @@
 from collections import OrderedDict
-import GenshiBASIC.Constants as constants
-import GenshiBASIC.Utils as utils
-import GenshiBASIC.Warnings as warnings
-from GenshiBASIC.Token import Token
+import Constants as constants
+import Utils as utils
+import Warnings as warnings
+from Token import Token
 
 class Lexer:
     

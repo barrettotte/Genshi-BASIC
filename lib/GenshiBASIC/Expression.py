@@ -1,4 +1,4 @@
-from GenshiBASIC.Node import Node
+from Node import Node
 
 
 class Expression():

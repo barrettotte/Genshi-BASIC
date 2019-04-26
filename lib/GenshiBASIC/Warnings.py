@@ -1,4 +1,4 @@
-import GenshiBASIC.Constants as constants
+import Constants as constants
 import warnings
 
 
