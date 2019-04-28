@@ -16,7 +16,8 @@ class Lexer:
             warnings.raise_col_len(s)
         line = line[0:constants.COL_LEN]
         for elem in constants.PUNCTUATION + constants.OPERATORS:
-            if elem["char"] in line: line = line.replace(elem["char"], " " + elem["char"] + " ")
+            if elem["char"] in line:
+                line = line.replace(elem["char"], " " + elem["char"] + " ")
         return utils.split_and_filter(line)
 
     def make_lexemes(self, src):
@@ -55,7 +56,7 @@ class Lexer:
                         in_quote = False
                         for x in range(i+1, j): tokens[x].literal = "STRING"
                         break
-                if j+1 == len(tokens): break
+                if j+1 >= len(tokens): break
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"

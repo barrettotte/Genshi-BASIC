@@ -2,19 +2,23 @@
 
 An interpreter for 原始 (Genshi) BASIC; A primitive implementation of BASIC based off of Commodore 64 BASICv2.
 
-This is my first attempt at writing an interpreter.
+This is my first attempt at writing an interpreter and a python package.
+
+Even though writing an interpreter for a custom BASIC dialect is pretty useless, the same 
+lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.
 
 
 ## Progress
-- [ ] Lexer
+- [x] Lexer
   - [x] File or string to lexemes
   - [x] Lexemes to tokens
   - [x] Basic warnings
-  - [ ] Unit testing
+  - [x] Unit testing
 - [ ] Parser
   - [x] Grammar rules
   - [x] Node tree (nesting)
   - [x] Expressions (Binary, Unary, Grouping, Literal)
+  - [x] Compound Expressions
   - [ ] Syntax errors
   - [ ] Declarations
     - [ ] Function declaration

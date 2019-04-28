@@ -1,0 +1,35 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Run workspace (TMP)",
+            "type": "shell",
+            "command": "python lib/GenshiBASIC/_workspace.py",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run All Tests",
+            "type": "shell",
+            "command": "CD lib/GenshiBASIC && python -m unittest discover",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Run Lexer Tests",
+            "type": "shell",
+            "command": "CD lib/GenshiBASIC && python -m unittest tests.test_lexer",
+            "group": "test"
+        },
+        {
+            "label": "Run Parser Tests",
+            "type": "shell",
+            "command": "CD lib/GenshiBASIC && python -m unittest tests.test_parser",
+            "group": "test"
+        }
+    ]
+}

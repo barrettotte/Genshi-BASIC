@@ -11,7 +11,7 @@ class Stack:
         return len(self.items) == 0
 
     def push(self, item):
-        if self.T is None or type(item) == self.T:
+        if self.T is None or isinstance(item, self.T):
             self.items.append(item)
         else:
             raise TypeError(
