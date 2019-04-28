@@ -42,21 +42,25 @@ class Lexer:
         return "LITERAL"
     
     def prepare_tokens(self, tokens):
+        minus_idx = []
         for i in range(len(tokens)):
             token = tokens[i]
             in_quote = False
             if token.literal != None: 
                 continue
             elif token.token_type == "COMMENT":
-                for j in range(i+1, len(tokens)): tokens[j].token_type = "COMMENT"
+                for j in range(i+1, len(tokens)): 
+                    tokens[j].token_type = "COMMENT"
             elif token.token_type == "QUOTATION":
                 in_quote = True
                 for j in range(i+1, len(tokens)):
                     if tokens[j].token_type == "QUOTATION":
                         in_quote = False
-                        for x in range(i+1, j): tokens[x].literal = "STRING"
+                        for x in range(i+1, j): 
+                            tokens[x].literal = "STRING"
                         break
-                if j+1 >= len(tokens): break
+                if j+1 >= len(tokens): 
+                    break
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"
@@ -64,8 +68,13 @@ class Lexer:
                     token.literal = "IDENTIFIER"
                 else:
                     token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER" 
+            elif token.token_type == "UNARY" and token.lexeme == "-":
+                minus_idx.append(i) # convert all '-' to ['+', '-']
         if in_quote: 
             raise SyntaxError("Non-terminated string; line: " + self.tokens_to_line(tokens))
+        for i in minus_idx:
+            tokens.insert(i, Token("BINARY", "+", token.line))
+        return tokens
 
     def tokens_to_line(self, tokens):
         line = str(tokens[0].line)
@@ -75,11 +84,12 @@ class Lexer:
 
     def make_tokens(self, lexemes_dict):
         self.tokens = OrderedDict()
+        print(len(lexemes_dict.items()))
         for line_num, lexemes_list in lexemes_dict.items():
             self.tokens[line_num] = []
             for lexeme in lexemes_list:
                 self.tokens[line_num].append(Token(self.classify_lexeme(lexeme), lexeme, line_num))
-            self.prepare_tokens(self.tokens[line_num])
+            self.tokens[line_num] = self.prepare_tokens(self.tokens[line_num])
         return self.tokens
 
     def lex(self, src):

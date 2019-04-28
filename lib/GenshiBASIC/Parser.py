@@ -27,11 +27,17 @@ class Parser:
                 lines[line_num].append(n)
         return lines
 
+    def print_node_stack(self, node_stack):
+        for i in node_stack.as_list():
+            print(i.node_type)
 
     def parse_grouping_expression(self, node_stack, line):
         if node_stack.peek().node_type == "LEFT_PAREN":
             left = node_stack.pop()
-            exp = self.parse_expression(node_stack, line)
+            if node_stack.peek().node_type == "LEFT_PAREN":
+                exp = self.parse_grouping_expression(node_stack, line)
+            else:
+                exp = self.parse_expression(node_stack, line)
             if not node_stack.is_empty():
                 if node_stack.peek().node_type == "RIGHT_PAREN":
                     right = node_stack.pop()
@@ -81,7 +87,7 @@ class Parser:
         while not node_stack.is_empty():
             print("Parsing an Expression...")
             print("    " + node_stack.peek().node_type)
-
+            
             if type(node_stack.peek()) is Expression_Node:
                 print("      Found an expression node " + node_stack.peek().node_type)
                 if node_stack.peek().node_type == "BINARY_EXP":
@@ -92,10 +98,19 @@ class Parser:
                         if node_stack.peek().node_type == "BINARY":
                             op = node_stack.pop()
                             if not node_stack.is_empty():
-                                right = self.parse_expression(node_stack, line)
-                                return Expression_Node(Binary_Exp(group, op, right), line=line)
+                                if node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
+                                    node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
+                                if node_stack.peek().node_type == "LEFT_PAREN":
+                                    right = self.parse_grouping_expression(node_stack, line)
+                                else:
+                                    right = node_stack.pop()
+                                exp = Expression_Node(Binary_Exp(group, op, right), line=line)
+                                if not node_stack.is_empty():
+                                    node_stack.push(exp)
+                                    return self.parse_expression(node_stack, line)
+                                return exp
                             else:
-                                return Exception("Unexpected end of Binary expression on line " + line)
+                                raise Exception("Unexpected end of Binary expression on line " + line)
                         else:
                             return self.parse_grouping_expression(node_stack, line)
                     else:
@@ -115,7 +130,7 @@ class Parser:
                     return literal
                 else:
                     raise Exception("Unexpected Token " + node_stack.peek().node_type)
-               
+
             elif node_stack.peek().node_type == "LEFT_PAREN":
                 print("    Found a left_paren node " + node_stack.peek().node_type)
                 return self.parse_grouping_expression(node_stack, line)
@@ -137,7 +152,6 @@ class Parser:
                         raise Exception("Unexpected end of Expression on line " + line)
                 else:
                     raise Exception("Unexpected end of Expression on line " + line)
-                
             else:
                 raise Exception("Unexpected Token " + node_stack.peek().node_type)
         raise Exception("Unexpected parsing failure")
@@ -146,10 +160,7 @@ class Parser:
     def statement_str(self, statement):
         s = statement.line
         for n in statement.children:
-            if isinstance(n, Expression_Node):
-                s += " " + n.str_statement()
-            else:
-                s += " " + str(n.content)
+            s += " " + n.str_statement() if isinstance(n, Expression_Node) else str(n.content)
         return s
 
     def syntax_err(self, expected, line, statement, context=""):
@@ -168,6 +179,8 @@ class Parser:
             statement = Node("STATEMENT", line=line)
             for i in reversed(range(len(nodes))):
                 node_stack.push(nodes[i])
+
+            # TODO: REFACTOR THIS MONSTER
             # TODO: This can probably be done with a list
             while not node_stack.is_empty():
                 if node_stack.peek().node_type == "FUNC-DEF":
@@ -215,6 +228,7 @@ class Parser:
                     break
             print("\n-------------------")
             print(statement)
+
         
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())

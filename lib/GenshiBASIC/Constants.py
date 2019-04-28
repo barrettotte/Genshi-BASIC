@@ -3,7 +3,7 @@ MAX_LINES = 63999
 
 OPERATORS = [ 
     { "char": "+",  "type": "BINARY" },
-    { "char": "-",  "type": "BINARY" },
+    { "char": "-",  "type": "UNARY" },
     { "char": "/",  "type": "BINARY" },
     { "char": "*",  "type": "BINARY" },
     { "char": "^",  "type": "BINARY" },
@@ -52,7 +52,7 @@ KEYWORDS = [
     { "word": "MOD",    "type": "OPERATOR"    },
     { "word": "MID$",   "type": "THREE-PARAM" },
     { "word": "ENDFOR", "type": "FOR-END"     },
-    { "word": "NOT",    "type": "BOOLEAN"     },
+    { "word": "NOT",    "type": "UNARY"       },
     { "word": "OR",     "type": "OPERATOR"    },
     { "word": "PRINT",  "type": "NO-PARAM"    },
     { "word": "REM",    "type": "COMMENT"     },
