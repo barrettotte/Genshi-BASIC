@@ -42,7 +42,6 @@ class Lexer:
         return "LITERAL"
     
     def prepare_tokens(self, tokens):
-        minus_idx = []
         for i in range(len(tokens)):
             token = tokens[i]
             in_quote = False
@@ -68,12 +67,8 @@ class Lexer:
                     token.literal = "IDENTIFIER"
                 else:
                     token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER" 
-            elif token.token_type == "UNARY" and token.lexeme == "-":
-                minus_idx.append(i) # convert all '-' to ['+', '-']
         if in_quote: 
             raise SyntaxError("Non-terminated string; line: " + self.tokens_to_line(tokens))
-        for i in minus_idx:
-            tokens.insert(i, Token("BINARY", "+", token.line))
         return tokens
 
     def tokens_to_line(self, tokens):
