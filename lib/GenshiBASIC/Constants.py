@@ -71,3 +71,8 @@ KEYWORDS = [
     { "word": "TO",     "type": "FOR-DEF"     },
     { "word": "XOR",    "type": "OPERATOR"    }
 ]
+
+GRAMMAR_RULES = { 
+  "FUNC-DEF": [
+    "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"
+  ]}

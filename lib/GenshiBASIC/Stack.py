@@ -17,6 +17,10 @@ class Stack:
             raise TypeError(
               "This stack is of type " + str(self.T) + " . Cannot add item of type " + str(type(item))
             )
+    
+    def push_list(self, l):
+        for e in l:
+            self.push(e)
 
     def pop(self):
         if self.is_empty(): raise Exception("Cannot pop an empty stack")
