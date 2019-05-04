@@ -79,7 +79,6 @@ class Lexer:
 
     def make_tokens(self, lexemes_dict):
         self.tokens = OrderedDict()
-        print(len(lexemes_dict.items()))
         for line_num, lexemes_list in lexemes_dict.items():
             self.tokens[line_num] = []
             for lexeme in lexemes_list:

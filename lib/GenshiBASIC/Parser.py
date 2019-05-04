@@ -13,8 +13,10 @@ class Parser:
         self.parse_tree = Node()
 
     def print_node_stack(self, node_stack):
-        for i in node_stack.as_list(): print(i.node_type)
-        print("--------------------")
+        print("+------STACK-------+")
+        for i in reversed(node_stack.as_list()): 
+            print("|   " + str(i.node_type).ljust(15) + "|")
+        print("+------------------+")
 
     def node_from_token(self, token):
         tok_type = token.token_type
@@ -64,7 +66,7 @@ class Parser:
             left = node_stack.pop()
             if node_stack.peek().node_type == "BINARY":
                 return self.parse_binary_operator(left, node_stack, line)
-            elif node_stack.peek().node_type == "RIGHT_PAREN": 
+            elif node_stack.peek().node_type == "RIGHT_PAREN":
                 return left
             raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
         raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
@@ -122,7 +124,7 @@ class Parser:
         msg += " on line " + line
         raise SyntaxError(stmt + "\n" + (" "*stmt_len) + "^^^^^\n  " + msg + "\n")
 
-    def parse_parameters(self, node_stack, line):
+    def parse_parameters(self, node_stack, line, statement):
         param_nodes = []
         while not node_stack.is_empty() and node_stack.peek().node_type != "RIGHT_PAREN":
             if node_stack.peek().node_type == "IDENTIFIER":
@@ -152,7 +154,7 @@ class Parser:
                     if elem == node_stack.peek().node_type:
                         statement.add_child(node_stack.pop())
                     elif elem == "PARAMETERS":
-                        statement.add_children(self.parse_parameters(node_stack, line))
+                        statement.add_children(self.parse_parameters(node_stack, line, statement))
                     elif elem == "EXPRESSION":
                         statement.add_child(self.parse_expression(node_stack, line))
                     else:

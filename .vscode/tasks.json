@@ -4,7 +4,7 @@
         {
             "label": "Run workspace (TMP)",
             "type": "shell",
-            "command": "python lib/GenshiBASIC/_workspace.py",
+            "command": "python3 lib/GenshiBASIC/_workspace.py",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -13,7 +13,7 @@
         {
             "label": "Run All Tests",
             "type": "shell",
-            "command": "CD lib/GenshiBASIC && python -m unittest discover",
+            "command": "cd lib/GenshiBASIC && python3 -m unittest discover",
             "group": {
                 "kind": "test",
                 "isDefault": true
@@ -22,13 +22,13 @@
         {
             "label": "Run Lexer Tests",
             "type": "shell",
-            "command": "CD lib/GenshiBASIC && python -m unittest tests.test_lexer",
+            "command": "cd lib/GenshiBASIC && python3 -m unittest tests.test_lexer",
             "group": "test"
         },
         {
             "label": "Run Parser Tests",
             "type": "shell",
-            "command": "CD lib/GenshiBASIC && python -m unittest tests.test_parser",
+            "command": "cd lib/GenshiBASIC && python3 -m unittest tests.test_parser",
             "group": "test"
         }
     ]

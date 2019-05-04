@@ -17,19 +17,20 @@ lexing, parsing, and interpreting fundamentals I learned can be applied to other
 - [ ] Parser
   - [x] Grammar rules
   - [x] Node tree (nesting)
-  - [x] Expressions (Binary, Unary, Grouping, Literal)
+  - [ ] Expressions (Binary(x), Unary(), Grouping(x), Literal(x))
   - [x] Compound Expressions
   - [ ] Syntax errors
   - [ ] Declarations
-    - [ ] Function declaration
+    - [x] Function declaration
     - [ ] Array declaration
     - [ ] Variable declaration
-  - [ ] Statments
+  - [ ] Statements
     - [ ] For statement
     - [ ] Function statement
     - [ ] Go statement
     - [ ] If statement
     - [ ] Print statement
+  - [ ] For loop blocks
   - [ ] Unit testing
 - [ ] Interpreter
   - [ ] TBD
@@ -96,6 +97,11 @@ Essentially, I stripped out all of the memory manipulation and I/O (except PRINT
 I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
 
 These changes objectively make this version of BASIC pretty useless, but this is just meant for education.
+
+
+## C64 BASIC Rules
+* Lines can only contain 40 characters
+* Max number of lines is 63999
 
 
 ## Symbolic Operators
