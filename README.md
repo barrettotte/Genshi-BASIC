@@ -8,41 +8,6 @@ Even though writing an interpreter for a custom BASIC dialect is pretty useless,
 lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.
 
 
-## Progress
-- [x] Lexer
-  - [x] File or string to lexemes
-  - [x] Lexemes to tokens
-  - [x] Basic warnings
-  - [x] Unit testing
-- [ ] Parser
-  - [x] Grammar rules
-  - [x] Node tree (nesting)
-  - [ ] Expressions (Binary(x), Unary(), Grouping(x), Literal(x))
-  - [x] Compound Expressions
-  - [ ] Syntax errors
-  - [ ] Declarations
-    - [x] Function declaration
-    - [ ] Array declaration
-    - [ ] Variable declaration
-  - [ ] Statements
-    - [ ] For statement
-    - [ ] Function statement
-    - [ ] Go statement
-    - [ ] If statement
-    - [ ] Print statement
-  - [ ] For loop blocks
-  - [ ] Unit testing
-- [ ] Interpreter
-  - [ ] TBD
-  - [ ] Unit testing
-- [ ] Misc
-  - [ ] Documentation
-  - [x] Package setup
-  - [ ] Run in Docker
-  - [ ] CI with GitLab
-  - [ ] CD to PyPi
-
-
 ## Install
 ```TBD```
 
@@ -163,8 +128,9 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * Added ```MOD``` keyword for modulus operator.
 * Replaced ```NEXT``` with ```ENDFOR``` to make parsing more intuitive.
 * Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc)
-  * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4```
+  * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4 (EXCEPTION)```
 * Lines are stripped of whitespace > 1; To retain whitespace in printing use ```SPC(N)```
+* A string variable by convention should end with '$', but I won't throw an exception.
 
 
 ## Assumptions
