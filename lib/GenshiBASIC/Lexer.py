@@ -66,7 +66,9 @@ class Lexer:
                 elif i > 0 and tokens[i-1].lexeme == "NEXT":
                     token.literal = "IDENTIFIER"
                 else:
-                    token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER" 
+                    token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER"
+            elif i > 0 and token.lexeme == "-" and tokens[i-1].token_type in ["RIGHT_PAREN", "LITERAL"]:
+                tokens[i].token_type = "BINARY"
         if in_quote: 
             raise SyntaxError("Non-terminated string; line: " + self.tokens_to_line(tokens))
         return tokens

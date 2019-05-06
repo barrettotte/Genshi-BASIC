@@ -10,7 +10,7 @@ class Parser:
 
     def __init__(self):
         self.node_tree = Node("ROOT")
-        self.parse_tree = Node()
+        self.parse_tree = Node("PROGRAM", line=-1)
 
     def print_node_stack(self, node_stack):
         print("+------STACK-------+")
@@ -37,6 +37,8 @@ class Parser:
     def parse_expression_node(self, node_stack, line):
         if node_stack.peek().node_type == "BINARY_EXP":
             return self.parse_binary_expression(node_stack, line)
+        elif node_stack.peek().node_type == "UNARY_EXP":
+            return self.parse_unary_expression(node_stack, line)
         elif node_stack.peek().node_type == "GROUPING_EXP":
             exp = node_stack.pop()
             if not node_stack.is_empty():
@@ -45,31 +47,27 @@ class Parser:
                 elif node_stack.peek().node_type == "RIGHT_PAREN":
                     return exp
                 return self.parse_expression(node_stack, line)
-            raise Exception("Unexpected end of Expression on line " + line) #TODO: Exception msg
-        raise Exception("Unexpected Token " + node_stack.peek().node_type)  #TODO: Exception msg
+            raise Exception("Unexpected end of Expression on line " + line)
+        raise Exception("Unexpected Token " + node_stack.peek().node_type)
 
     def parse_grouping_expression(self, node_stack, line):
         if node_stack.is_empty():
-            raise Exception("Unterminated grouping expression. Expected missing ')' on line " + line) #TODO: Exception msg
+            raise Exception("Unterminated grouping expression. Expected missing ')' on line " + line)
         left = node_stack.pop()
         exp = self.parse_expression(node_stack, line)
         if not node_stack.is_empty():
             if node_stack.peek().node_type == "RIGHT_PAREN":
                 right = node_stack.pop()
                 return Expression_Node(Grouping_Exp(left, exp, right), line=line)
-        raise Exception("Unterminated grouping expression. Expected missing ')' on line " + line) #TODO: Exception msg
+        raise Exception("Unterminated grouping expression. Expected missing ')' on line " + line)
 
     def parse_binary_expression(self, node_stack, line):
-        if node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
-            node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
-        if node_stack.peek().node_type in ["BINARY_EXP", "LITERAL_EXP"]:
-            left = node_stack.pop()
-            if node_stack.peek().node_type == "BINARY":
-                return self.parse_binary_operator(left, node_stack, line)
-            elif node_stack.peek().node_type == "RIGHT_PAREN":
-                return left
-            raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
-        raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
+        left = node_stack.pop()
+        if node_stack.peek().node_type == "BINARY":
+            return self.parse_binary_operator(left, node_stack, line)
+        elif node_stack.peek().node_type == "RIGHT_PAREN":
+            return left
+        raise Exception("Unexpected Token " + node_stack.peek().node_type)
     
     def parse_binary_operator(self, left, node_stack, line):
         op = node_stack.pop()
@@ -78,6 +76,8 @@ class Parser:
                 node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
             if node_stack.peek().node_type == "LEFT_PAREN":
                 right = self.parse_grouping_expression(node_stack, line)
+            elif node_stack.peek().node_type == "UNARY":
+                right = self.parse_unary_operator(node_stack.pop(), node_stack, line)
             else:
                 right = node_stack.pop()
             exp = Expression_Node(Binary_Exp(left, op, right), line=line)
@@ -85,13 +85,35 @@ class Parser:
                 node_stack.push(exp)
                 return self.parse_expression(node_stack, line)
             return exp
-        raise Exception("Unexpected end of Binary expression on line " + line) #TODO: Exception msg
+        raise Exception("Unexpected end of Binary expression on line " + line)
+
+    def parse_unary_expression(self, node_stack, line):
+        left = node_stack.pop()
+        if node_stack.peek().node_type == "BINARY":
+            return self.parse_binary_operator(left, node_stack, line)
+        elif node_stack.peek().node_type == "RIGHT_PAREN":
+            return left
+        raise Exception("Unexpected Token " + node_stack.peek().node_type)
+
+    def parse_unary_operator(self, left, node_stack, line):
+        if node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
+            node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
+        right = node_stack.pop()
+        if right.node_type == "LEFT_PAREN":
+            node_stack.push(right)
+            right = self.parse_grouping_expression(node_stack, line)
+        exp = Expression_Node(Unary_Exp(left, right), line=line)
+        if not node_stack.is_empty():
+            node_stack.push(exp)
+            return self.parse_expression(node_stack, line)
+        return exp
 
     def parse_expression(self, node_stack, line):
         while not node_stack.is_empty():
-            print("Parsing an Expression...") #TODO: DEBUG
-            print("    " + node_stack.peek().node_type) # TODO: DEBUG
-            self.print_node_stack(node_stack) #TODO: DEBUG
+            # Very convenient debug here... #
+            #print("Parsing an Expression...")
+            #print("    " + node_stack.peek().node_type)
+            #self.print_node_stack(node_stack)
             
             if type(node_stack.peek()) is Expression_Node:
                 return self.parse_expression_node(node_stack, line)
@@ -101,20 +123,25 @@ class Parser:
                     return group
                 node_stack.push(group)
                 return self.parse_expression(node_stack, line)
+            elif node_stack.peek().node_type == "UNARY":
+                left = node_stack.pop()
+                if not node_stack.is_empty():
+                    return self.parse_unary_operator(left, node_stack, line)
+                raise Exception("Unexpected end of unary expression on line " + line)
             elif node_stack.peek().node_type == "BINARY":
                 left = node_stack.pop()
                 if not node_stack.is_empty():
                     return self.parse_binary_operator(left, node_stack, line)
-                raise Exception("Unexpected end of binary expression on line " + line) #TODO: Exception msg
+                raise Exception("Unexpected end of binary expression on line " + line)
             elif node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
                 literal = Expression_Node(Literal_Exp(node_stack.pop()), line=line)
                 if node_stack.peek().node_type == "BINARY":
                     return self.parse_binary_operator(literal, node_stack, line)
                 elif node_stack.peek().node_type == "RIGHT_PAREN":
                     return literal
-                raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
-            raise Exception("Unexpected Token " + node_stack.peek().node_type) #TODO: Exception msg
-        raise Exception("Unexpected parsing failure") #TODO: Exception msg
+                raise Exception("Unexpected Token " + node_stack.peek().node_type)
+            raise Exception("Unexpected Token " + node_stack.peek().node_type) 
+        raise Exception("Unexpected parsing failure")
 
     def syntax_err(self, expected, line, statement, context=""):
         stmt = self.statement_str(statement)
@@ -141,7 +168,7 @@ class Parser:
 
     def make_parse_tree(self, node_tree):
         grammar_rules = constants.GRAMMAR_RULES
-        parse_tree = Node()
+        self.parse_tree = Node("PROGRAM", line=-1)
         node_stack = Stack(Node())
         lines = self.node_tree_to_lines(node_tree)
         for line, nodes in lines.items():
@@ -159,12 +186,11 @@ class Parser:
                         statement.add_child(self.parse_expression(node_stack, line))
                     else:
                         self.syntax_err(elem, line, statement, context="Function declaration")
-                else:
-                    print("DEBUG break make_parse_tree()") # TODO: DEBUG
-                    break
-            print("\n-------------------")
-            print(statement)
-
+            #print(statement)
+            self.parse_tree.add_child(statement)
+        #print(self.parse_tree)
+        return self.parse_tree
+            
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())
         index = len(tokens)-1
@@ -184,7 +210,7 @@ class Parser:
                 if token.token_type == "FOR-END":  nest_lvl += 1
             index -= 1
         if nest_lvl != 0: 
-            raise SyntaxError("Missing 'ENDFOR' statement")  #TODO: Exception msg
+            raise SyntaxError("Missing 'ENDFOR' statement")
         while not node_stack.is_empty():
             root.add_child(node_stack.pop())
         self.node_tree = root
@@ -197,4 +223,4 @@ class Parser:
                 tokens_flat.append(t)
         self.make_node_tree(tokens_flat, Node("ROOT"))
         self.make_parse_tree(self.node_tree)
-        return self.node_tree #TODO: Change to parse_tree when finished
+        return self.parse_tree
