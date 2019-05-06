@@ -110,9 +110,8 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * Relational ```<, >, <>, <=, =<, >=, =>``` (LT, GT, NE, LE, LE, GE, GE)
 
 
-## Commands
-
-| Command | Description                                | Syntax                                       |
+## Keywords
+| Keyword | Description                                | Syntax                                       |
 | ------- | ------------------------------------------ | -------------------------------------------- |
 | ABS     | Absolute value of numeric                  | ```ABS(-10)``` -> 10                         |
 | AND     | Boolean AND                                | ```3>2 AND 5<6``` -> -1 (true)               |
@@ -176,7 +175,7 @@ These changes objectively make this version of BASIC pretty useless, but this is
 
 ## Possible future goals
 * Look into adding **DATA**, **READ**, **INPUT** commands ... might be doable?
-* Token column number tracking (begin, end)
+* Token column number tracking (begin, end) for better error messages
 * Better error specification (column number + expression)
 
 
