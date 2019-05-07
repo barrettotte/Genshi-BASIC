@@ -27,9 +27,9 @@ class Expression_Node(Node):
             if isinstance(n, Expression_Node):
                 x = "type: " + str(n.node_type).ljust(20) + "content:     "
                 x += "line: " + str(self.line) + "   children: Node[" + str(len(self.children)) + "]\n"
-                s += x + "\n" + str(n.str_statement())
+                s += " " + x + "\n" + str(n.str_statement())
             else:
-                s += str(n)
+                s += " " + str(n)
         return s
     
     def __str__(self):

@@ -58,8 +58,8 @@ class Lexer:
                         for x in range(i+1, j): 
                             tokens[x].literal = "STRING"
                         break
-                if j+1 >= len(tokens): 
-                    break
+                        if j+1 >= len(tokens): 
+                            break
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"

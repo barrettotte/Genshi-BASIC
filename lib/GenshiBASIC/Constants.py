@@ -36,13 +36,13 @@ KEYWORDS = [
     { "word": "CLR",    "type": "NO-PARAM"    },
     { "word": "COS",    "type": "ONE-PARAM"   },
     { "word": "DEF",    "type": "FUNC-DEF"    },
-    { "word": "DIM",    "type": "VAR-DEF"     },
+    { "word": "DIM",    "type": "ARR-DEF"     },
     { "word": "END",    "type": "NO-PARAM"    },
     { "word": "EXP",    "type": "ONE-PARAM"   },
     { "word": "FN",     "type": "FUNCTION"    },
-    { "word": "FOR",    "type": "FOR-START"   },
-    { "word": "GOSUB",  "type": "GO"          },
-    { "word": "GOTO",   "type": "GO"          },
+    { "word": "FOR",    "type": "FOR-DEF"     },
+    { "word": "GOSUB",  "type": "GO-DEF"      },
+    { "word": "GOTO",   "type": "GO-DEF"      },
     { "word": "IF",     "type": "IF-DEF"      },
     { "word": "INT",    "type": "ONE-PARAM"   },
     { "word": "LEFT$",  "type": "TWO-PARAM"   },
@@ -68,11 +68,15 @@ KEYWORDS = [
     { "word": "TAB",    "type": "ONE-PARAM"   },
     { "word": "TAN",    "type": "ONE-PARAM"   },
     { "word": "THEN",   "type": "THEN"        },
-    { "word": "TO",     "type": "FOR-DEF"     },
+    { "word": "TO",     "type": "FOR-TO"      },
     { "word": "XOR",    "type": "OPERATOR"    }
 ]
 
 GRAMMAR_RULES = { 
+  "ARR-DEF": [
+    "IDENTIFIER", "LEFT_PAREN", "ARGUMENTS", "RIGHT_PAREN"
+  ],
   "FUNC-DEF": [
     "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"
-  ]}
+  ],
+}

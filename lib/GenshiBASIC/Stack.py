@@ -45,6 +45,9 @@ class Stack:
     def __str__(self):
         return "Stack" + str(self.T) + " of size " + str(self.count())
 
+    def __len__(self):
+        return len(self.items)
+
     def contains(self, attribute, val):
         try:
             for i in self.items:

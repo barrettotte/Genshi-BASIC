@@ -12,11 +12,12 @@ class Parser:
         self.node_tree = Node("ROOT")
         self.parse_tree = Node("PROGRAM", line=-1)
 
-    def print_node_stack(self, node_stack):
-        print("+------STACK-------+")
+    def print_node_stack(self, node_stack, label=""):
+        header = "------" + label + "STACK-------"
+        print("+" + header + "+")
         for i in reversed(node_stack.as_list()): 
-            print("|   " + str(i.node_type).ljust(15) + "|")
-        print("+------------------+")
+            print("|   " + str(i.node_type).ljust(15+len(label)) + "|")
+        print("+" + "-"*len(header) + "+")
 
     def node_from_token(self, token):
         tok_type = token.token_type
@@ -114,7 +115,6 @@ class Parser:
             #print("Parsing an Expression...")
             #print("    " + node_stack.peek().node_type)
             #self.print_node_stack(node_stack)
-            
             if type(node_stack.peek()) is Expression_Node:
                 return self.parse_expression_node(node_stack, line)
             elif node_stack.peek().node_type == "LEFT_PAREN":
@@ -135,13 +135,21 @@ class Parser:
                 raise Exception("Unexpected end of binary expression on line " + line)
             elif node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
                 literal = Expression_Node(Literal_Exp(node_stack.pop()), line=line)
-                if node_stack.peek().node_type == "BINARY":
+                if node_stack.is_empty():
+                    return literal
+                elif node_stack.peek().node_type == "BINARY":
                     return self.parse_binary_operator(literal, node_stack, line)
                 elif node_stack.peek().node_type == "RIGHT_PAREN":
                     return literal
                 raise Exception("Unexpected Token " + node_stack.peek().node_type)
             raise Exception("Unexpected Token " + node_stack.peek().node_type) 
         raise Exception("Unexpected parsing failure")
+
+    def statement_str(self, statement):
+        s = statement.line
+        for n in statement.children:
+            s += " " + n.str_statement() if isinstance(n, Expression_Node) else " " + str(n.content)
+        return s
 
     def syntax_err(self, expected, line, statement, context=""):
         stmt = self.statement_str(statement)
@@ -156,19 +164,45 @@ class Parser:
         while not node_stack.is_empty() and node_stack.peek().node_type != "RIGHT_PAREN":
             if node_stack.peek().node_type == "IDENTIFIER":
                 param_nodes.append(node_stack.pop())
-                if node_stack.peek().node_type == "IDENTIFIER":
-                    self.syntax_err("','", line, statement, context="Function declaration")
+                if not node_stack.is_empty and node_stack.peek().node_type != "COMMA":
+                    self.syntax_err("','", line, statement, context="Parameters definition")
             elif node_stack.peek().node_type == "COMMA":
                 param_nodes.append(node_stack.pop())
-                if node_stack.peek().node_type == "COMMA":
-                    self.syntax_err("identifier", line, statement, context="Function declaration")
+                if not node_stack.is_empty and node_stack.peek().node_type != "IDENTIFIER":
+                    self.syntax_err("identifier", line, statement, context="Parameters definition")
             else:
-                self.syntax_err("',' or identifier", line, statement, context="Function declaration")
+                self.syntax_err("',' or identifier", line, statement, context="Parameters definition")
         return param_nodes
+
+    def parse_arguments(self, node_stack, line, statement):
+        arg_nodes = []
+        
+        while not node_stack.is_empty():
+            self.print_node_stack(node_stack, "NODE_")
+
+            if node_stack.peek().node_type == "COMMA":
+                print("????")
+                arg_nodes.append(node_stack.pop())
+            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL"]:
+                self.syntax_err("Expression", line, statement, context="Arguments definition")
+
+            arg_stack = Stack()
+            self.print_node_stack(node_stack, "NODE_")
+            while not node_stack.is_empty() and node_stack.peek().node_type != "COMMA":
+                print("XXX")
+                arg_stack.push(node_stack.pop())
+            self.print_node_stack(arg_stack, "ARG_")
+            # The stack is upside down :/ make a queue?
+
+            if len(arg_stack) > 0 and arg_stack.peek().node_type != "RIGHT_PAREN":
+                arg_nodes.append(self.parse_expression(arg_stack, line))
+                if node_stack.peek().node_type != "COMMA":
+                    self.syntax_err("Expression", line, statement, context="Arguments definition")
+        return arg_nodes
 
     def make_parse_tree(self, node_tree):
         grammar_rules = constants.GRAMMAR_RULES
-        self.parse_tree = Node("PROGRAM", line=-1)
+        tree = Node("PROGRAM", line=-1)
         node_stack = Stack(Node())
         lines = self.node_tree_to_lines(node_tree)
         for line, nodes in lines.items():
@@ -178,18 +212,21 @@ class Parser:
                 rule = grammar_rules[node_stack.peek().node_type]
                 statement.add_child(node_stack.pop())
                 for elem in rule:
-                    if elem == node_stack.peek().node_type:
+                    if node_stack.is_empty():
+                        print(statement)
+                        raise SyntaxError("Unexpected end of statement on line " + line)
+                    elif elem == node_stack.peek().node_type:
                         statement.add_child(node_stack.pop())
                     elif elem == "PARAMETERS":
                         statement.add_children(self.parse_parameters(node_stack, line, statement))
+                    elif elem == "ARGUMENTS":
+                        statement.add_children(self.parse_arguments(node_stack, line, statement))
                     elif elem == "EXPRESSION":
                         statement.add_child(self.parse_expression(node_stack, line))
                     else:
-                        self.syntax_err(elem, line, statement, context="Function declaration")
-            #print(statement)
-            self.parse_tree.add_child(statement)
-        #print(self.parse_tree)
-        return self.parse_tree
+                        raise SyntaxError("Unexpected element expected on line " + line)
+            tree.add_child(statement)
+        return tree
             
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())
@@ -213,14 +250,13 @@ class Parser:
             raise SyntaxError("Missing 'ENDFOR' statement")
         while not node_stack.is_empty():
             root.add_child(node_stack.pop())
-        self.node_tree = root
-        return self.node_tree
+        return root
 
     def parse(self, tokens):
         tokens_flat = []
         for line_num, token_list in tokens.items():
             for t in token_list:
                 tokens_flat.append(t)
-        self.make_node_tree(tokens_flat, Node("ROOT"))
-        self.make_parse_tree(self.node_tree)
+        self.node_tree = self.make_node_tree(tokens_flat, Node("ROOT"))
+        self.parse_tree = self.make_parse_tree(self.node_tree)
         return self.parse_tree
