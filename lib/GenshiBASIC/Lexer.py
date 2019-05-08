@@ -42,6 +42,7 @@ class Lexer:
         return "LITERAL"
     
     def prepare_tokens(self, tokens):
+        in_quote = False
         for i in range(len(tokens)):
             token = tokens[i]
             in_quote = False
@@ -58,15 +59,12 @@ class Lexer:
                         for x in range(i+1, j): 
                             tokens[x].literal = "STRING"
                         break
-                        if j+1 >= len(tokens): 
-                            break
+                if j+1 >= len(tokens): break
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"
-                elif i > 0 and tokens[i-1].lexeme == "NEXT":
-                    token.literal = "IDENTIFIER"
                 else:
-                    token.literal = "NUMERIC" if token.lexeme.isdigit() else "IDENTIFIER"
+                    token.literal = "NUMERIC" if token.lexeme.isnumeric() else "IDENTIFIER"
             elif i > 0 and token.lexeme == "-" and tokens[i-1].token_type in ["RIGHT_PAREN", "LITERAL"]:
                 tokens[i].token_type = "BINARY"
         if in_quote: 
@@ -90,4 +88,3 @@ class Lexer:
 
     def lex(self, src):
         return self.make_tokens(self.make_lexemes(src))
-

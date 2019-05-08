@@ -28,11 +28,10 @@ class Parser:
     def node_tree_to_lines(self, node_tree):
         lines = OrderedDict()
         for n in node_tree.children:
-            if not n.node_type in ["FOR-START", "FOR-END", "FOR-DEF"] :
-                line_num = n.line
-                if not line_num in lines: 
-                    lines[line_num] = []
-                lines[line_num].append(n)
+            line_num = n.line
+            if not line_num in lines: 
+                lines[line_num] = []
+            lines[line_num].append(n)
         return lines
 
     def parse_expression_node(self, node_stack, line):
@@ -111,10 +110,6 @@ class Parser:
 
     def parse_expression(self, node_stack, line):
         while not node_stack.is_empty():
-            # Very convenient debug here... #
-            #print("Parsing an Expression...")
-            #print("    " + node_stack.peek().node_type)
-            #self.print_node_stack(node_stack)
             if type(node_stack.peek()) is Expression_Node:
                 return self.parse_expression_node(node_stack, line)
             elif node_stack.peek().node_type == "LEFT_PAREN":
@@ -139,7 +134,7 @@ class Parser:
                     return literal
                 elif node_stack.peek().node_type == "BINARY":
                     return self.parse_binary_operator(literal, node_stack, line)
-                elif node_stack.peek().node_type == "RIGHT_PAREN":
+                elif node_stack.peek().node_type in ["RIGHT_PAREN", "FOR-TO", "FOR-STEP"]:
                     return literal
                 raise Exception("Unexpected Token " + node_stack.peek().node_type)
             raise Exception("Unexpected Token " + node_stack.peek().node_type) 
@@ -176,28 +171,28 @@ class Parser:
 
     def parse_arguments(self, node_stack, line, statement):
         arg_nodes = []
+        arg_stack = Stack()
+        if not node_stack.peek().node_type == "LEFT_PAREN":
+            self.syntax_err("'('", line, statement, context="Arguments definition")
+        arg_nodes.append(node_stack.pop())
         
         while not node_stack.is_empty():
-            self.print_node_stack(node_stack, "NODE_")
-
             if node_stack.peek().node_type == "COMMA":
-                print("????")
                 arg_nodes.append(node_stack.pop())
-            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL"]:
+            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL", "IDENTIFIER"]:
                 self.syntax_err("Expression", line, statement, context="Arguments definition")
-
-            arg_stack = Stack()
-            self.print_node_stack(node_stack, "NODE_")
             while not node_stack.is_empty() and node_stack.peek().node_type != "COMMA":
-                print("XXX")
                 arg_stack.push(node_stack.pop())
-            self.print_node_stack(arg_stack, "ARG_")
-            # The stack is upside down :/ make a queue?
+            arg_stack = utils.flip_stack(arg_stack)
 
-            if len(arg_stack) > 0 and arg_stack.peek().node_type != "RIGHT_PAREN":
-                arg_nodes.append(self.parse_expression(arg_stack, line))
-                if node_stack.peek().node_type != "COMMA":
+            if not arg_stack.is_empty():
+                if arg_stack.peek().node_type == "RIGHT_PAREN":
                     self.syntax_err("Expression", line, statement, context="Arguments definition")
+                arg_nodes.append(self.parse_expression(arg_stack, line))
+                if not arg_stack.is_empty() and arg_stack.peek().node_type == "RIGHT_PAREN":
+                    arg_nodes.append(arg_stack.pop())
+        if arg_nodes[-1].node_type != "RIGHT_PAREN":
+            self.syntax_err("')'", line, statement, context="Arguments definition")
         return arg_nodes
 
     def make_parse_tree(self, node_tree):
@@ -213,7 +208,6 @@ class Parser:
                 statement.add_child(node_stack.pop())
                 for elem in rule:
                     if node_stack.is_empty():
-                        print(statement)
                         raise SyntaxError("Unexpected end of statement on line " + line)
                     elif elem == node_stack.peek().node_type:
                         statement.add_child(node_stack.pop())
@@ -224,30 +218,27 @@ class Parser:
                     elif elem == "EXPRESSION":
                         statement.add_child(self.parse_expression(node_stack, line))
                     else:
-                        raise SyntaxError("Unexpected element expected on line " + line)
+                        raise SyntaxError("Unexpected element [" + elem + "] on line " + line)
+                if len(rule) == 0 and not node_stack.is_empty():
+                    raise SyntaxError("Unexpected element [" + node_stack.pop().node_type + "] on line " + line)
             tree.add_child(statement)
         return tree
-            
+    
+    # This was kind of leftover from a different train of thought, everything works now, 
+    #   but it seems a little silly to transform to a tree, a stack, and back to a tree. 
+    #   Should definitely refactor if you still have enough sanity left at the end.
     def make_node_tree(self, tokens, root):
         node_stack = Stack(Node())
         index = len(tokens)-1
         nest_lvl = 0
         while index >= 0:
             token = tokens[index]
-            if token.token_type == "FOR-START":
-                nest_lvl -= 1
-                for_node = self.node_from_token(token)
-                while not node_stack.is_empty():
-                    for_node.add_child(node_stack.pop())
-                    if node_stack.peek().node_type == "FOR-END":
-                        break
-                node_stack.push(for_node)
-            elif token.token_type != "COMMENT":
+            nest_lvl -= 1 if (token.token_type == "FOR-DEF") else 0
+            nest_lvl += 1 if (token.token_type == "FOR-END") else 0
+            if token.token_type != "COMMENT":
                 node_stack.push(self.node_from_token(token))
-                if token.token_type == "FOR-END":  nest_lvl += 1
             index -= 1
-        if nest_lvl != 0: 
-            raise SyntaxError("Missing 'ENDFOR' statement")
+        if nest_lvl != 0: raise SyntaxError("Missing 'ENDFOR' statement")
         while not node_stack.is_empty():
             root.add_child(node_stack.pop())
         return root

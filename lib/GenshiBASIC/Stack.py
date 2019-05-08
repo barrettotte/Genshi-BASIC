@@ -57,4 +57,3 @@ class Stack:
         except: 
             raise Exception(str(self.T) + " has no attribute " + attribute)
         return False
-        

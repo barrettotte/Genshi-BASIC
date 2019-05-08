@@ -126,17 +126,12 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * As previously mentioned, all memory manipulation and I/O (except ```PRINT```) is stripped out.
 * Added ```XOR``` keyword for exclusive OR operator.
 * Added ```MOD``` keyword for modulus operator.
+* Keyword ```STEP``` is necessary in ```FOR``` statements.
 * Replaced ```NEXT``` with ```ENDFOR``` to make parsing more intuitive.
 * Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc)
   * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4 (EXCEPTION)```
 * Lines are stripped of whitespace > 1; To retain whitespace in printing use ```SPC(N)```
 * A string variable by convention should end with '$', but I won't throw an exception.
-
-
-## Assumptions
-* If a ```STEP``` is not specified in ```FOR``` loop, ```STEP``` is set according to range
-  * Ex: ```FOR X=1 TO 3``` -> Assume low to high, ```STEP=1```
-  * Ex: ```FOR X=10 TO 0``` -> Assume high to low, ```STEP=-1```
 
 
 ## Possible future goals

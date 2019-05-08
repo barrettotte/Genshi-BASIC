@@ -55,7 +55,7 @@ class Test_Lexer(unittest.TestCase):
 
     def test_lexemes_ExampleProgram(self):
         res = self.genshiBas.make_lexemes(self.example_program)
-        expected_lens = [7, 9, 2, 1, 10, 10, 6, 4, 5]
+        expected_lens = [4, 9, 2, 1, 10, 10, 6, 4, 5]
         self.assertTrue(len(res) == len(expected_lens))
         i = 0
         for k,v in res.items():
@@ -103,7 +103,7 @@ class Test_Lexer(unittest.TestCase):
     
     def test_tokens_ExampleProgram(self):
         res = self.genshiBas.make_tokens(self.example_program)
-        expected_lens = [7, 9, 2, 1, 10, 10, 6, 4, 5]
+        expected_lens = [4, 9, 2, 1, 10, 10, 6, 4, 5]
         self.assertTrue(len(res) == len(expected_lens))
         i = 0
         for k,v in res.items():
@@ -113,7 +113,7 @@ class Test_Lexer(unittest.TestCase):
     def test_tokens_ExampleProgram_Line50(self):
         res = self.genshiBas.make_tokens(self.example_program)
         expected = [
-            'FUNC-DEF', 'FUNCTION', 'LITERAL', 'LEFT_PAREN', 'LITERAL', 
+            'FUNC-DEC', 'FUNCTION', 'LITERAL', 'LEFT_PAREN', 'LITERAL', 
             'RIGHT_PAREN', 'EQUALS', 'LITERAL', 'BINARY', 'LITERAL'
         ]
         self.assertTrue(len(res['50']) == len(expected))

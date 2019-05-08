@@ -33,3 +33,19 @@ def print_dict(d):
 
 def split_and_filter(s, delim=" ", filt=None, is_strip=True):
     return list(filter(filt, (s.strip() if is_strip else s).split(delim)))
+
+
+def push_bottom(stack, item):
+    if stack.is_empty():
+        stack.push(item)
+    else:
+        popped = stack.pop()
+        push_bottom(stack, item)
+        stack.push(popped)
+
+def flip_stack(stack):
+    if not stack.is_empty():
+        popped = stack.pop()
+        flip_stack(stack)
+        push_bottom(stack, popped)
+    return stack

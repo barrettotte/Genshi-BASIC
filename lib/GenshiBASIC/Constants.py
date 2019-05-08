@@ -23,7 +23,6 @@ PUNCTUATION = [
     { "char": ";",  "type": "SEMICOLON"   },
     { "char": ":",  "type": "COLON"       },
     { "char": ",",  "type": "COMMA"       },
-    { "char": ".",  "type": "PERIOD"      },
     { "char": "\"", "type": "QUOTATION"   }
 ]
 
@@ -35,8 +34,8 @@ KEYWORDS = [
     { "word": "CHR$",   "type": "ONE-PARAM"   },
     { "word": "CLR",    "type": "NO-PARAM"    },
     { "word": "COS",    "type": "ONE-PARAM"   },
-    { "word": "DEF",    "type": "FUNC-DEF"    },
-    { "word": "DIM",    "type": "ARR-DEF"     },
+    { "word": "DEF",    "type": "FUNC-DEC"    },
+    { "word": "DIM",    "type": "ARR-DEC"     },
     { "word": "END",    "type": "NO-PARAM"    },
     { "word": "EXP",    "type": "ONE-PARAM"   },
     { "word": "FN",     "type": "FUNCTION"    },
@@ -47,7 +46,7 @@ KEYWORDS = [
     { "word": "INT",    "type": "ONE-PARAM"   },
     { "word": "LEFT$",  "type": "TWO-PARAM"   },
     { "word": "LEN",    "type": "ONE-PARAM"   },
-    { "word": "LET",    "type": "VAR-DEF"     },
+    { "word": "LET",    "type": "VAR-DEC"     },
     { "word": "LOG",    "type": "ONE-PARAM"   },
     { "word": "MOD",    "type": "OPERATOR"    },
     { "word": "MID$",   "type": "THREE-PARAM" },
@@ -63,7 +62,7 @@ KEYWORDS = [
     { "word": "SIN",    "type": "ONE-PARAM"   },
     { "word": "SPC",    "type": "ONE-PARAM"   },
     { "word": "SQR",    "type": "ONE-PARAM"   },
-    { "word": "STEP",   "type": "FOR-DEF"     },
+    { "word": "STEP",   "type": "FOR-STEP"    },
     { "word": "STR$",   "type": "ONE-PARAM"   },
     { "word": "TAB",    "type": "ONE-PARAM"   },
     { "word": "TAN",    "type": "ONE-PARAM"   },
@@ -73,10 +72,17 @@ KEYWORDS = [
 ]
 
 GRAMMAR_RULES = { 
-  "ARR-DEF": [
-    "IDENTIFIER", "LEFT_PAREN", "ARGUMENTS", "RIGHT_PAREN"
+  "ARR-DEC": [
+    "IDENTIFIER", "ARGUMENTS"
   ],
-  "FUNC-DEF": [
+  "FUNC-DEC": [
     "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"
   ],
+  "VAR-DEC": [
+    "IDENTIFIER", "EQUALS", "EXPRESSION"
+  ],
+  "FOR-DEF": [
+    "IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"
+  ],
+  "FOR-END": [],
 }
