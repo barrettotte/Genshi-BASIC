@@ -103,5 +103,9 @@ class Test_Parser(unittest.TestCase):
         ])
         self.genshiBas.parse(prog)
 
+    def test_go(self):
+        self.genshiBas.parse("10 GOTO X+4")
+        self.genshiBas.parse("10 GOSUB X*4+(1+y)")
+
 
 if __name__ == "__main__": unittest.main()

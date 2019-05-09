@@ -20,16 +20,15 @@ bif         -> "ABS" | "ASC" | "ATN" | "CHR$" | "CLR" | "COS" | "END" | "EXP"
 parameters  -> IDENTIFIER ( "," IDENTIFIER )* ;
 arguments   -> expression ( "," expression )* ;
 
-declaration -> func_dec | var_dec | arr_dec | statement ;
+declaration -> func_dec | var_dec | arr_dec ;
+
 
 arr_dec     -> "DIM" IDENTIFIER "(" arguments ")" ;
 func_dec    -> "DEF" "FN" IDENTIFIER "(" parameters? ")" "=" expression ;
 var_dec     -> "LET" IDENTIFIER "=" expression ;
 
-statement   -> for_stmt | func_stmt | go_stmt | if_stmt | print_stmt ;
-
-for_stmt    -> "FOR" IDENTIFIER "=" expression "TO" expression ( STEP expression )? ;
+for_stmt    -> "FOR" IDENTIFIER "=" expression "TO" expression "STEP" expression ;
 func_stmt   -> ( IDENTIFIER | bif ) ( "(" arguments? ")" )? ;
 go_stmt     -> ( "GOTO" | "GOSUB" ) expression ;
 if_stmt     -> "IF" expression "THEN" statement ;
-print_stmt  -> "PRINT" expression ;
+print_stmt  -> "PRINT" statement ;

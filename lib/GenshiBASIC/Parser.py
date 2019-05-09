@@ -195,33 +195,36 @@ class Parser:
             self.syntax_err("')'", line, statement, context="Arguments definition")
         return arg_nodes
 
-    def make_parse_tree(self, node_tree):
+    def parse_statement(self, node_stack, line):
         grammar_rules = constants.GRAMMAR_RULES
-        tree = Node("PROGRAM", line=-1)
+        statement = Node("STATEMENT", line=line)
+        while not node_stack.is_empty():
+            rule = grammar_rules[node_stack.peek().node_type]
+            statement.add_child(node_stack.pop())
+            for elem in rule:
+                if node_stack.is_empty():
+                    raise SyntaxError("Unexpected end of statement on line " + line)
+                elif elem == node_stack.peek().node_type:
+                    statement.add_child(node_stack.pop())
+                elif elem == "PARAMETERS":
+                    statement.add_children(self.parse_parameters(node_stack, line, statement))
+                elif elem == "ARGUMENTS":
+                    statement.add_children(self.parse_arguments(node_stack, line, statement))
+                elif elem == "EXPRESSION":
+                    statement.add_child(self.parse_expression(node_stack, line))
+                else:
+                    raise SyntaxError("Expected element [" + elem + "] on line " + line)
+            if len(rule) == 0 and not node_stack.is_empty():
+                raise SyntaxError("Unexpected element [" + node_stack.pop().node_type + "] on line " + line)
+        return statement
+
+    def make_parse_tree(self, node_tree):
         node_stack = Stack(Node())
-        lines = self.node_tree_to_lines(node_tree)
-        for line, nodes in lines.items():
+        tree = Node("PROGRAM", line=-1)
+        for line, nodes in self.node_tree_to_lines(node_tree).items():
             node_stack.push_list(reversed(nodes))
-            statement = Node("STATEMENT", line=line)
-            while not node_stack.is_empty():
-                rule = grammar_rules[node_stack.peek().node_type]
-                statement.add_child(node_stack.pop())
-                for elem in rule:
-                    if node_stack.is_empty():
-                        raise SyntaxError("Unexpected end of statement on line " + line)
-                    elif elem == node_stack.peek().node_type:
-                        statement.add_child(node_stack.pop())
-                    elif elem == "PARAMETERS":
-                        statement.add_children(self.parse_parameters(node_stack, line, statement))
-                    elif elem == "ARGUMENTS":
-                        statement.add_children(self.parse_arguments(node_stack, line, statement))
-                    elif elem == "EXPRESSION":
-                        statement.add_child(self.parse_expression(node_stack, line))
-                    else:
-                        raise SyntaxError("Unexpected element [" + elem + "] on line " + line)
-                if len(rule) == 0 and not node_stack.is_empty():
-                    raise SyntaxError("Unexpected element [" + node_stack.pop().node_type + "] on line " + line)
-            tree.add_child(statement)
+            tree.add_child(self.parse_statement(node_stack, line))
+            
         return tree
     
     # This was kind of leftover from a different train of thought, everything works now, 

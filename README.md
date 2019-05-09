@@ -56,11 +56,12 @@ genshiBas.parse('10 PRINT "HELLO WORLD"') # returns parse tree
 
 
 ## 原始 BASIC
-Genshi BASIC has 42 commands and is a simpler version of Commodore 64 BASICv2 (71 commands).
+Genshi BASIC has 48 keywords and is inspired by Commodore 64 BASICv2.
 
 Essentially, I stripped out all of the memory manipulation and I/O (except PRINT). Otherwise, 
 I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
 
+I took the liberty of changing bits of the language to make the task of building a parser easier.
 These changes objectively make this version of BASIC pretty useless, but this is just meant for education.
 
 
@@ -72,7 +73,6 @@ These changes objectively make this version of BASIC pretty useless, but this is
 ## Symbolic Operators
 * Arithmetic ```+, -, *, \, ^```
 * Assignment ```=```
-* Relational ```<, >, <>, <=, =<, >=, =>``` (LT, GT, NE, LE, LE, GE, GE)
 
 
 ## Keywords
@@ -89,22 +89,28 @@ These changes objectively make this version of BASIC pretty useless, but this is
 | DIM     | Allocate memory for an array               | ```DIM A$(2,3)```                            |
 | END     | End program execution                      | ```END```                                    |
 | ENDFOR  | Close scope of for loop                    | ```FOR X=1 TO 3: PRINT X: ENDFOR``` -> 1...3 |
+| EQ      | Equal to relational operator               | ```IF I EQ I```                              |
 | EXP     | Inverse natural log of numeric; EXP(x)=e^X | ```EXP(-1)``` -> 0.367879441                 |
 | FN      | Executes defined function                  | ```FN FTEST(3)``` -> 9                       |
 | FOR     | Declare a for loop                         | ```FOR X=0 TO 5: PRINT X: ENDFOR``` -> 0...5 |
+| GE      | >= relational operator                     | ```IF I GE 0```                              |
 | GOSUB   | Jump to subroutine at line number          | ```GOSUB 1000```                             |
 | GOTO    | Jump to line number                        | ```GOTO 500```                               |
+| GT      | > relational operator                      | ```IF I GT 0```                              |
 | IF      | Start if statement                         | ```IF A$="" THEN PRINT "EMPTY"``` -> "EMPTY" |
 | INT     | Round a numeric                            | ```INT(1.53)``` -> 1                         |
+| LE      | <= relational operator                     | ```IF I LE 0```                              |
 | LEFT$   | Substring from left to numeric (0-255)     | ```A$="ABCDEF":LEFT$(A$, 3)``` -> "ABC"      |
 | LEN     | Length of string                           | ```A$="ABCD":PRINT LEN(A$)``` -> 4           |
 | LET     | Assign values to variable                  | ```LET C$ = $A + B$```                       |
+| LT      | < relational operator                      | ```IF I LT 0```                              |
 | LOG     | Natural logarithm of numeric               | ```LOG(10)``` -> 2.30258509                  |
 | MID$    | Substring from numeric to numeric (0-255)  | ```MID$(A$, 1, 3)```                         |
 | MOD     | Modulus of numeric                         | ```4 MOD 3``` -> 1                           |
+| NE      | != relational operator                     | ```IF I NE 4```                              |
 | NOT     | Boolean NOT                                | ```IF NOT A=1 AND B$<>"TEST" THEN ```        |
 | OR      | Boolean OR                                 | ```4<2 OR 1>9``` -> 0 (false)                |
-| PRINT   | Print to screen. ';' suppress newline      | ```PRINT "HELLO"``` -> "HELLO"               |
+| PRINT   | Print to screen                            | ```PRINT "HELLO"``` -> "HELLO"               |
 | REM     | Comments                                   | ```REM THIS IS A COMMENT```                  |
 | RETURN  | Finish subroutine                          | ```RETURN```                                 |
 | RIGHT$  | Substring from right to numeric (0-255)    | ```RIGHT$($A, 3)```                          |
@@ -124,11 +130,13 @@ These changes objectively make this version of BASIC pretty useless, but this is
 
 ## Notable differences vs Commodore 64 BASICv2
 * As previously mentioned, all memory manipulation and I/O (except ```PRINT```) is stripped out.
+* Replaced ```NEXT``` with ```ENDFOR``` to make parsing easier.
+* Keyword ```STEP``` is necessary in ```FOR``` statements.
 * Added ```XOR``` keyword for exclusive OR operator.
 * Added ```MOD``` keyword for modulus operator.
-* Keyword ```STEP``` is necessary in ```FOR``` statements.
-* Replaced ```NEXT``` with ```ENDFOR``` to make parsing more intuitive.
-* Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc)
+* Replaced ```=, >, <, <>, <=, =<, >=, =>``` with ```EQ, GT, LT, NE, LE, GE```
+  * I decided to mix the way CLP, SQL, and CFML handle relational operators; this made parsing tremendously easier.
+* Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc) (lazy lexing)
   * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4 (EXCEPTION)```
 * Lines are stripped of whitespace > 1; To retain whitespace in printing use ```SPC(N)```
 * A string variable by convention should end with '$', but I won't throw an exception.
@@ -138,6 +146,7 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * Look into adding **DATA**, **READ**, **INPUT** commands ... might be doable?
 * Token column number tracking (begin, end) for better error messages
 * Better error specification (column number + expression)
+* Print format specifiers ```',', ';', ':'```
 
 
 ## References

@@ -8,27 +8,20 @@ OPERATORS = [
     { "char": "*",  "type": "BINARY" },
     { "char": "^",  "type": "BINARY" },
     { "char": "=",  "type": "EQUALS" },
-    { "char": "<",  "type": "BINARY" },
-    { "char": ">",  "type": "BINARY" },
-    { "char": "<>", "type": "BINARY" },
-    { "char": "<=", "type": "BINARY" },
-    { "char": "=<", "type": "BINARY" },
-    { "char": ">=", "type": "BINARY" },
-    { "char": "=>", "type": "BINARY" }
 ]
 
 PUNCTUATION = [ 
     { "char": "(",  "type": "LEFT_PAREN"  },
     { "char": ")",  "type": "RIGHT_PAREN" },
-    { "char": ";",  "type": "SEMICOLON"   },
-    { "char": ":",  "type": "COLON"       },
-    { "char": ",",  "type": "COMMA"       },
-    { "char": "\"", "type": "QUOTATION"   }
+    { "char": "\"", "type": "QUOTATION"   },
+   #{ "char": ";",  "type": "SEMICOLON"   },
+   #{ "char": ":",  "type": "COLON"       },
+   #{ "char": ",",  "type": "COMMA"       },
 ]
 
 KEYWORDS = [
     { "word": "ABS",    "type": "ONE-PARAM"   },
-    { "word": "AND",    "type": "OPERATOR"    },
+    { "word": "AND",    "type": "BINARY"      },
     { "word": "ASC",    "type": "ONE-PARAM"   },
     { "word": "ATN",    "type": "ONE-PARAM"   },
     { "word": "CHR$",   "type": "ONE-PARAM"   },
@@ -37,22 +30,28 @@ KEYWORDS = [
     { "word": "DEF",    "type": "FUNC-DEC"    },
     { "word": "DIM",    "type": "ARR-DEC"     },
     { "word": "END",    "type": "NO-PARAM"    },
+    { "word": "EQ",     "type": "BINARY"      },
     { "word": "EXP",    "type": "ONE-PARAM"   },
     { "word": "FN",     "type": "FUNCTION"    },
     { "word": "FOR",    "type": "FOR-DEF"     },
+    { "word": "GE",     "type": "BINARY"      },
     { "word": "GOSUB",  "type": "GO-DEF"      },
     { "word": "GOTO",   "type": "GO-DEF"      },
+    { "word": "GT",     "type": "BINARY"      },
     { "word": "IF",     "type": "IF-DEF"      },
     { "word": "INT",    "type": "ONE-PARAM"   },
+    { "word": "LE",     "type": "BINARY"      },
     { "word": "LEFT$",  "type": "TWO-PARAM"   },
     { "word": "LEN",    "type": "ONE-PARAM"   },
     { "word": "LET",    "type": "VAR-DEC"     },
+    { "word": "LT",     "type": "BINARY"      },
     { "word": "LOG",    "type": "ONE-PARAM"   },
-    { "word": "MOD",    "type": "OPERATOR"    },
+    { "word": "MOD",    "type": "BINARY"      },
     { "word": "MID$",   "type": "THREE-PARAM" },
     { "word": "ENDFOR", "type": "FOR-END"     },
+    { "word": "NE",     "type": "BINARY"      },
     { "word": "NOT",    "type": "UNARY"       },
-    { "word": "OR",     "type": "OPERATOR"    },
+    { "word": "OR",     "type": "BINARY"      },
     { "word": "PRINT",  "type": "NO-PARAM"    },
     { "word": "REM",    "type": "COMMENT"     },
     { "word": "RETURN", "type": "NO-PARAM"    },
@@ -68,21 +67,22 @@ KEYWORDS = [
     { "word": "TAN",    "type": "ONE-PARAM"   },
     { "word": "THEN",   "type": "THEN"        },
     { "word": "TO",     "type": "FOR-TO"      },
-    { "word": "XOR",    "type": "OPERATOR"    }
+    { "word": "XOR",    "type": "BINARY"      }
 ]
 
 GRAMMAR_RULES = { 
-  "ARR-DEC": [
-    "IDENTIFIER", "ARGUMENTS"
-  ],
-  "FUNC-DEC": [
-    "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"
-  ],
-  "VAR-DEC": [
-    "IDENTIFIER", "EQUALS", "EXPRESSION"
-  ],
-  "FOR-DEF": [
-    "IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"
-  ],
-  "FOR-END": [],
+  "ARR-DEC":    ["IDENTIFIER", "ARGUMENTS"],
+  "FOR-DEF":    ["IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"],
+  "FOR-END":    [],
+  "FUNC-DEC":   ["FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"],
+  "GO-DEF":     ["EXPRESSION"],
+  "VAR-DEC":    ["IDENTIFIER", "EQUALS", "EXPRESSION"],
+  "IDENTIFIER": ["EQUALS", "EXPRESSION"],
+  "IF-DEF":     ["EXPRESSION", "THEN", "STATEMENT", "!", [
+                  "FOR-DEF", "FOR-TO", "FOR-STEP", "FUNCTION", "IF-DEF", "THEN", "BINARY", "UNARY"]
+                ],
+  "PRINT":      ["STATEMENT", "!", [
+                  "BINARY", "NO-PARAM", "UNARY", "FUNCTION", "GO-DEF", "IF-DEF", "VAR-DEC", 
+                  "FOR-END", "FOR-STEP", "THEN", "FOR-TO"]
+                ]
 }
