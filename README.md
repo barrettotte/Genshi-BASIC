@@ -1,6 +1,9 @@
 # GenshiBASIC-Interpreter
 
-An interpreter for 原始 (Genshi) BASIC; A primitive implementation of BASIC based off of Commodore 64 BASICv2.
+[![pipeline status](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/badges/master/pipeline.svg)](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/commits/master)
+![GitHub](https://img.shields.io/github/license/barrettotte/GenshiBASIC-Interpreter.svg)
+
+An interpreter for 原始 (Genshi) BASIC; A BASIC dialect inspired by Commodore 64 BASICv2.
 
 This is my first attempt at writing an interpreter and a python package.
 

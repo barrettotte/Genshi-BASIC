@@ -14,9 +14,9 @@ PUNCTUATION = [
     { "char": "(",  "type": "LEFT_PAREN"  },
     { "char": ")",  "type": "RIGHT_PAREN" },
     { "char": "\"", "type": "QUOTATION"   },
+    { "char": ",",  "type": "COMMA"       },
    #{ "char": ";",  "type": "SEMICOLON"   },
    #{ "char": ":",  "type": "COLON"       },
-   #{ "char": ",",  "type": "COMMA"       },
 ]
 
 KEYWORDS = [
@@ -71,18 +71,24 @@ KEYWORDS = [
 ]
 
 GRAMMAR_RULES = { 
-  "ARR-DEC":    ["IDENTIFIER", "ARGUMENTS"],
-  "FOR-DEF":    ["IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"],
-  "FOR-END":    [],
-  "FUNC-DEC":   ["FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"],
-  "GO-DEF":     ["EXPRESSION"],
-  "VAR-DEC":    ["IDENTIFIER", "EQUALS", "EXPRESSION"],
-  "IDENTIFIER": ["EQUALS", "EXPRESSION"],
-  "IF-DEF":     ["EXPRESSION", "THEN", "STATEMENT", "!", [
-                  "FOR-DEF", "FOR-TO", "FOR-STEP", "FUNCTION", "IF-DEF", "THEN", "BINARY", "UNARY"]
-                ],
-  "PRINT":      ["STATEMENT", "!", [
-                  "BINARY", "NO-PARAM", "UNARY", "FUNCTION", "GO-DEF", "IF-DEF", "VAR-DEC", 
-                  "FOR-END", "FOR-STEP", "THEN", "FOR-TO"]
-                ]
+  "ARR-DEC":      ["IDENTIFIER", "ARGUMENTS"],
+  "FOR-DEF":      ["IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"],
+  "FOR-END":      [],
+  "ONE-PARAM":    ["ARGUMENTS"],
+  "TWO-PARAM":    ["ARGUMENTS"],
+  "THREE-PARAM":  ["ARGUMENTS"],
+  "FUNC-DEC":     ["FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS", "RIGHT_PAREN", "EQUALS", "EXPRESSION"],
+  "GO-DEF":       ["EXPRESSION"],
+  "VAR-DEC":      ["IDENTIFIER", "EQUALS", "EXPRESSION"],
+  "IDENTIFIER":   {
+                    "EQUALS":     ["EXPRESSION"],
+                    "LEFT_PAREN": ["ARGUMENTS"]
+                  },
+  "IF-DEF":       ["EXPRESSION", "THEN", "STATEMENT", ("!", [
+                    "FOR-DEF", "FOR-TO", "FOR-STEP", "FUNCTION", "IF-DEF", "THEN", "BINARY", "UNARY"]
+                  )],
+  "PRINT":        ["STATEMENT", ("!", [
+                    "BINARY", "NO-PARAM", "UNARY", "FUNCTION", "GO-DEF", "IF-DEF", "VAR-DEC", 
+                    "FOR-END", "FOR-STEP", "THEN", "FOR-TO"]
+                  )],
 }

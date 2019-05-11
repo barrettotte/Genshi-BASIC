@@ -35,18 +35,14 @@ class Parser:
         return lines
 
     def parse_expression_node(self, node_stack, line):
-        if node_stack.peek().node_type == "BINARY_EXP":
-            return self.parse_binary_expression(node_stack, line)
-        elif node_stack.peek().node_type == "UNARY_EXP":
-            return self.parse_unary_expression(node_stack, line)
-        elif node_stack.peek().node_type == "GROUPING_EXP":
-            exp = node_stack.pop()
+        if node_stack.peek().node_type in ["GROUPING_EXP", "BINARY_EXP", "UNARY_EXP", "FUNCTION_EXP"]:
+            left = node_stack.pop()
             if not node_stack.is_empty():
                 if node_stack.peek().node_type == "BINARY":
-                    return self.parse_binary_operator(exp, node_stack, line)
+                    return self.parse_binary_operator(left, node_stack, line)
                 elif node_stack.peek().node_type == "RIGHT_PAREN":
-                    return exp
-                return self.parse_expression(node_stack, line)
+                    return left
+                raise Exception("Unexpected Token " + node_stack.peek().node_type)
             raise Exception("Unexpected end of Expression on line " + line)
         raise Exception("Unexpected Token " + node_stack.peek().node_type)
 
@@ -60,24 +56,18 @@ class Parser:
                 right = node_stack.pop()
                 return Expression_Node(Grouping_Exp(left, exp, right), line=line)
         raise Exception("Unterminated grouping expression. Expected missing ')' on line " + line)
-
-    def parse_binary_expression(self, node_stack, line):
-        left = node_stack.pop()
-        if node_stack.peek().node_type == "BINARY":
-            return self.parse_binary_operator(left, node_stack, line)
-        elif node_stack.peek().node_type == "RIGHT_PAREN":
-            return left
-        raise Exception("Unexpected Token " + node_stack.peek().node_type)
     
     def parse_binary_operator(self, left, node_stack, line):
         op = node_stack.pop()
         if not node_stack.is_empty():
-            if node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
-                node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
-            if node_stack.peek().node_type == "LEFT_PAREN":
+            if node_stack.peek().node_type in ["LITERAL", "IDENTIFIER"]:
+                right = self.parse_literal_expression(node_stack.pop(), node_stack, line)
+            elif node_stack.peek().node_type == "LEFT_PAREN":
                 right = self.parse_grouping_expression(node_stack, line)
             elif node_stack.peek().node_type == "UNARY":
                 right = self.parse_unary_operator(node_stack.pop(), node_stack, line)
+            elif node_stack.peek().node_type in ["ONE-PARAM", "TWO-PARAM", "THREE-PARAM"]:
+                right = Expression_Node(Function_Exp(node_stack.pop(), self.parse_arguments(node_stack, line)), line)
             else:
                 right = node_stack.pop()
             exp = Expression_Node(Binary_Exp(left, op, right), line=line)
@@ -87,17 +77,9 @@ class Parser:
             return exp
         raise Exception("Unexpected end of Binary expression on line " + line)
 
-    def parse_unary_expression(self, node_stack, line):
-        left = node_stack.pop()
-        if node_stack.peek().node_type == "BINARY":
-            return self.parse_binary_operator(left, node_stack, line)
-        elif node_stack.peek().node_type == "RIGHT_PAREN":
-            return left
-        raise Exception("Unexpected Token " + node_stack.peek().node_type)
-
     def parse_unary_operator(self, left, node_stack, line):
-        if node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
-            node_stack.push(Expression_Node(Literal_Exp(node_stack.pop()), line=line))
+        if node_stack.peek().node_type in ["LITERAL", "IDENTIFIER"]:
+            node_stack.push(self.parse_literal_expression(node_stack.pop(), node_stack, line))
         right = node_stack.pop()
         if right.node_type == "LEFT_PAREN":
             node_stack.push(right)
@@ -107,6 +89,22 @@ class Parser:
             node_stack.push(exp)
             return self.parse_expression(node_stack, line)
         return exp
+
+    def parse_literal_expression(self, literal, node_stack, line):
+        if node_stack.is_empty():
+            return Expression_Node(Literal_Exp(literal), line=line)
+        elif node_stack.peek().node_type == "BINARY":
+            return self.parse_binary_operator(Expression_Node(Literal_Exp(literal), line=line), node_stack, line)
+        elif node_stack.peek().node_type in ["RIGHT_PAREN", "FOR-TO", "FOR-STEP"]:
+            return Expression_Node(Literal_Exp(literal), line=line)
+        elif node_stack.peek().node_type == "LEFT_PAREN":
+            func = Expression_Node(Function_Exp(literal, self.parse_arguments(node_stack, line)), line=line)
+            if not node_stack.is_empty():
+                node_stack.push(func)
+                return self.parse_expression(node_stack, line)
+            return func
+            
+        raise Exception("Unexpected Token " + node_stack.peek().node_type)
 
     def parse_expression(self, node_stack, line):
         while not node_stack.is_empty():
@@ -129,22 +127,19 @@ class Parser:
                     return self.parse_binary_operator(left, node_stack, line)
                 raise Exception("Unexpected end of binary expression on line " + line)
             elif node_stack.peek().node_type in ["IDENTIFIER", "LITERAL"]:
-                literal = Expression_Node(Literal_Exp(node_stack.pop()), line=line)
-                if node_stack.is_empty():
-                    return literal
-                elif node_stack.peek().node_type == "BINARY":
-                    return self.parse_binary_operator(literal, node_stack, line)
-                elif node_stack.peek().node_type in ["RIGHT_PAREN", "FOR-TO", "FOR-STEP"]:
-                    return literal
-                raise Exception("Unexpected Token " + node_stack.peek().node_type)
+                literal = node_stack.pop()
+                return self.parse_literal_expression(literal, node_stack, line)
+            elif node_stack.peek().node_type in ["ONE-PARAM", "TWO-PARAM", "THREE-PARAM"]:
+                identifier = node_stack.pop()
+                if not node_stack.is_empty():
+                    bif = Expression_Node(Function_Exp(identifier, self.parse_arguments(node_stack,line)),line)
+                    if not node_stack.is_empty():
+                        node_stack.push(bif)
+                        return self.parse_expression(node_stack, line)
+                    return bif
+                raise Exception("Unexpected end of function call on line " + line)
             raise Exception("Unexpected Token " + node_stack.peek().node_type) 
         raise Exception("Unexpected parsing failure")
-
-    def statement_str(self, statement):
-        s = statement.line
-        for n in statement.children:
-            s += " " + n.str_statement() if isinstance(n, Expression_Node) else " " + str(n.content)
-        return s
 
     def syntax_err(self, expected, line, statement, context=""):
         stmt = self.statement_str(statement)
@@ -167,9 +162,9 @@ class Parser:
                     self.syntax_err("identifier", line, statement, context="Parameters definition")
             else:
                 self.syntax_err("',' or identifier", line, statement, context="Parameters definition")
-        return param_nodes
+        return Node("PARAMETERS", line=line, children=param_nodes)
 
-    def parse_arguments(self, node_stack, line, statement):
+    def parse_arguments(self, node_stack, line, statement=''):
         arg_nodes = []
         arg_stack = Stack()
         if not node_stack.peek().node_type == "LEFT_PAREN":
@@ -193,7 +188,10 @@ class Parser:
                     arg_nodes.append(arg_stack.pop())
         if arg_nodes[-1].node_type != "RIGHT_PAREN":
             self.syntax_err("')'", line, statement, context="Arguments definition")
-        return arg_nodes
+        arg_stack = utils.flip_stack(arg_stack)
+        while not arg_stack.is_empty():
+            node_stack.push(arg_stack.pop())
+        return Node("ARGUMENTS", line=line, children=arg_nodes)
 
     def parse_statement(self, node_stack, line):
         grammar_rules = constants.GRAMMAR_RULES
@@ -201,21 +199,25 @@ class Parser:
         while not node_stack.is_empty():
             rule = grammar_rules[node_stack.peek().node_type]
             statement.add_child(node_stack.pop())
+            if isinstance(rule, dict):
+                rule = rule[node_stack.peek().node_type]
+                if node_stack.peek().node_type == "EQUALS":
+                    statement.add_child(node_stack.pop())
             for elem in rule:
                 if node_stack.is_empty():
                     raise SyntaxError("Unexpected end of statement on line " + line)
                 elif elem == node_stack.peek().node_type:
                     statement.add_child(node_stack.pop())
                 elif elem == "PARAMETERS":
-                    statement.add_children(self.parse_parameters(node_stack, line, statement))
+                    statement.add_child(self.parse_parameters(node_stack, line, statement))
                 elif elem == "ARGUMENTS":
-                    statement.add_children(self.parse_arguments(node_stack, line, statement))
+                    statement.add_child(self.parse_arguments(node_stack, line, statement))
                 elif elem == "EXPRESSION":
                     statement.add_child(self.parse_expression(node_stack, line))
                 else:
                     raise SyntaxError("Expected element [" + elem + "] on line " + line)
-            if len(rule) == 0 and not node_stack.is_empty():
-                raise SyntaxError("Unexpected element [" + node_stack.pop().node_type + "] on line " + line)
+            if not node_stack.is_empty():
+                raise SyntaxError("Parsing failed on line " + line + ". Elements still on stack")
         return statement
 
     def make_parse_tree(self, node_tree):

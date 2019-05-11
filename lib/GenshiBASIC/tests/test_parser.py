@@ -13,7 +13,7 @@ class Test_Parser(unittest.TestCase):
         res = self.genshiBas.parse('10 DEF FN FTEST (X) = X * 4+3')
         expected = [
             "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN",
-            "IDENTIFIER", "RIGHT_PAREN", "EQUALS", "BINARY_EXP"
+            "PARAMETERS", "RIGHT_PAREN", "EQUALS", "BINARY_EXP"
         ]
         line10 = res.children[0]
         for i in range(len(expected)):
@@ -23,7 +23,7 @@ class Test_Parser(unittest.TestCase):
         res = self.genshiBas.parse('10 DEF FN FTEST (X) = ((x / 5))')
         expected = [
             "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN",
-            "IDENTIFIER", "RIGHT_PAREN", "EQUALS", "GROUPING_EXP"
+            "PARAMETERS", "RIGHT_PAREN", "EQUALS", "GROUPING_EXP"
         ]
         line10 = res.children[0]
         for i in range(len(expected)):
@@ -33,7 +33,7 @@ class Test_Parser(unittest.TestCase):
         res = self.genshiBas.parse('10 DEF FN FTEST (X) = X * 4 + (3 / 5)')
         expected = [
             "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN",
-            "IDENTIFIER", "RIGHT_PAREN", "EQUALS", "BINARY_EXP"
+            "PARAMETERS", "RIGHT_PAREN", "EQUALS", "BINARY_EXP"
         ]
         line10 = res.children[0]
         for i in range(len(expected)):
@@ -43,7 +43,7 @@ class Test_Parser(unittest.TestCase):
         res = self.genshiBas.parse('10 DEF FN FTEST (X) = ((X * (3 / 5)))')
         expected = [
             "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN",
-            "IDENTIFIER", "RIGHT_PAREN", "EQUALS", "GROUPING_EXP"
+            "PARAMETERS", "RIGHT_PAREN", "EQUALS", "GROUPING_EXP"
         ]
         line10 = res.children[0]
         for i in range(len(expected)):
@@ -52,9 +52,8 @@ class Test_Parser(unittest.TestCase):
     def test_unary1(self):
         res = self.genshiBas.parse('10 DEF FN FTEST(X,Y,Z)=-(x+y)')
         expected = [
-            "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "IDENTIFIER",
-            "COMMA", "IDENTIFIER", "COMMA", "IDENTIFIER", "RIGHT_PAREN",
-            "EQUALS", "UNARY_EXP"
+            "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN", 
+            "PARAMETERS", "RIGHT_PAREN", "EQUALS", "UNARY_EXP"
         ]
         line10 = res.children[0]
         for i in range(len(expected)):
@@ -63,7 +62,7 @@ class Test_Parser(unittest.TestCase):
     def test_unary2(self):
         res = self.genshiBas.parse('10 DEF FN FTEST(X) = -(x)--(-(-y--z))')
         expected = [
-            "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "IDENTIFIER",
+            "FUNC-DEC", "FUNCTION", "IDENTIFIER", "LEFT_PAREN", "PARAMETERS",
             "RIGHT_PAREN", "EQUALS", "BINARY_EXP"
         ]
         line10 = res.children[0]
@@ -106,6 +105,21 @@ class Test_Parser(unittest.TestCase):
     def test_go(self):
         self.genshiBas.parse("10 GOTO X+4")
         self.genshiBas.parse("10 GOSUB X*4+(1+y)")
+
+    def test_func(self):
+        self.genshiBas.parse("10 COS(4, 3*(x-1))")
+        self.genshiBas.parse("10 DEF FN F() = X*2")
+        self.genshiBas.parse("10 X=COS(3,3)")
+        self.genshiBas.parse("10 DEF FN A (X,Y) = COS(X) + SIN(Y)")
+        self.genshiBas.parse("10 X = MID(1,2,3+X)")
+        self.genshiBas.parse("20 A(1,4)")
+        self.genshiBas.parse("10 X = HELLO(1,-2,3+-(X-4))")
+        self.genshiBas.parse("10 X = -MYFUNC(X, X*4)")
+        self.genshiBas.parse("10 X = A(B(X), X)")
+        self.genshiBas.parse("10 X = XYZ(X) + 3")
+        self.genshiBas.parse("10 X = 1 + XYZ(A)")
+        self.genshiBas.parse("10 X = A(B(X), X, 1 + C(Y))")
+        self.genshiBas.parse("10 X = A(4) + SIN(Y)")
 
 
 if __name__ == "__main__": unittest.main()

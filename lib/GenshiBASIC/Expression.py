@@ -41,7 +41,6 @@ class Expression_Node(Node):
 
 
 class Literal_Exp(Expression):
-
     def __init__(self, literal_node):
         if not type(literal_node) is Node: 
             raise TypeError("Literal node must be of type Node")
@@ -54,9 +53,21 @@ class Literal_Exp(Expression):
         return [self.content]
 
 
+class Function_Exp(Expression):
+    def __init__(self, identifier, arguments):
+        if not type(identifier) is Node:
+            raise TypeError("Identifier must be of type Node")
+        if not type(arguments) is Node:
+            raise TypeError("Arguments must be of type Node")
+        
+        self.identifier = identifier
+        self.arguments = arguments
+    
+    def get_nodes(self):
+        return [self.identifier, self.arguments]
+
 
 class Grouping_Exp(Expression):
-
     def __init__(self, left_paren, exp, right_paren):
         if not type(left_paren) is Node:    
             raise TypeError("Left paren must be of type Node")
@@ -78,7 +89,6 @@ class Grouping_Exp(Expression):
 
 
 class Unary_Exp(Expression):
-
     def __init__(self, op_node, exp):
         if not type(op_node) is Node:        
             raise TypeError("Operator node must be of type Node")
@@ -97,7 +107,6 @@ class Unary_Exp(Expression):
 
 
 class Binary_Exp(Expression):
-
     def __init__(self, left_exp, op_node, right_exp):
         if not isinstance(left_exp, (Expression, Expression_Node)):
             raise TypeError("Left expression must inherit from Expression or Expression_Node")
