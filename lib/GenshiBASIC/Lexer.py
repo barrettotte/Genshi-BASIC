@@ -42,24 +42,25 @@ class Lexer:
         return "LITERAL"
     
     def prepare_tokens(self, tokens):
-        in_quote = False
+        quote_count = 0
         for i in range(len(tokens)):
             token = tokens[i]
-            in_quote = False
             if token.literal != None: 
                 continue
             elif token.token_type == "COMMENT":
                 for j in range(i+1, len(tokens)): 
                     tokens[j].token_type = "COMMENT"
             elif token.token_type == "QUOTATION":
-                in_quote = True
+                quote_count += 1
+                end = i
                 for j in range(i+1, len(tokens)):
-                    if tokens[j].token_type == "QUOTATION":
-                        in_quote = False
-                        for x in range(i+1, j): 
-                            tokens[x].literal = "STRING"
+                    if(tokens[j].token_type == "QUOTATION"):
+                        end = j
                         break
-                if j+1 >= len(tokens): break
+                if quote_count % 2 != 0:
+                    for k in range(i+1, end):
+                        tokens[k].token_type = "STRING"
+                        tokens[k].literal = "STRING"
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"
@@ -67,7 +68,7 @@ class Lexer:
                     token.literal = "NUMERIC" if token.lexeme.isnumeric() else "IDENTIFIER"
             elif i > 0 and token.lexeme == "-" and tokens[i-1].token_type in ["RIGHT_PAREN", "LITERAL"]:
                 tokens[i].token_type = "BINARY"
-        if in_quote: 
+        if quote_count % 2 != 0: 
             raise SyntaxError("Non-terminated string; line: " + self.tokens_to_line(tokens))
         return tokens
 

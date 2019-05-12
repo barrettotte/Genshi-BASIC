@@ -52,7 +52,7 @@ KEYWORDS = [
     { "word": "NE",     "type": "BINARY"      },
     { "word": "NOT",    "type": "UNARY"       },
     { "word": "OR",     "type": "BINARY"      },
-    { "word": "PRINT",  "type": "NO-PARAM"    },
+    { "word": "PRINT",  "type": "PRINT"       },
     { "word": "REM",    "type": "COMMENT"     },
     { "word": "RETURN", "type": "NO-PARAM"    },
     { "word": "RIGHT$", "type": "TWO-PARAM"   },
@@ -82,13 +82,13 @@ GRAMMAR_RULES = {
   "VAR-DEC":      ["IDENTIFIER", "EQUALS", "EXPRESSION"],
   "IDENTIFIER":   {
                     "EQUALS":     ["EXPRESSION"],
-                    "LEFT_PAREN": ["ARGUMENTS"]
+                    "LEFT_PAREN": ["ARGUMENTS"],
                   },
-  "IF-DEF":       ["EXPRESSION", "THEN", "STATEMENT", ("!", [
-                    "FOR-DEF", "FOR-TO", "FOR-STEP", "FUNCTION", "IF-DEF", "THEN", "BINARY", "UNARY"]
-                  )],
-  "PRINT":        ["STATEMENT", ("!", [
-                    "BINARY", "NO-PARAM", "UNARY", "FUNCTION", "GO-DEF", "IF-DEF", "VAR-DEC", 
-                    "FOR-END", "FOR-STEP", "THEN", "FOR-TO"]
-                  )],
+  "IF-DEF":       ["EXPRESSION", "THEN", "EXPRESSION"],
+  "PRINT":        ["STRING"],
 }
+
+EXPRESSION_START = [
+  "IDENTIFIER", "LITERAL", "LEFT_PAREN", "UNARY", "ONE-PARAM", "TWO-PARAM", "THREE-PARAM", 
+  "NO-PARAM", "QUOTATION"
+]

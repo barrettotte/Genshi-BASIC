@@ -40,7 +40,7 @@ class Parser:
             if not node_stack.is_empty():
                 if node_stack.peek().node_type == "BINARY":
                     return self.parse_binary_operator(left, node_stack, line)
-                elif node_stack.peek().node_type == "RIGHT_PAREN":
+                elif node_stack.peek().node_type in ["RIGHT_PAREN", "THEN"]:
                     return left
                 raise Exception("Unexpected Token " + node_stack.peek().node_type)
             raise Exception("Unexpected end of Expression on line " + line)
@@ -91,7 +91,7 @@ class Parser:
         return exp
 
     def parse_literal_expression(self, literal, node_stack, line):
-        if node_stack.is_empty():
+        if node_stack.is_empty() or node_stack.peek().node_type == "THEN":
             return Expression_Node(Literal_Exp(literal), line=line)
         elif node_stack.peek().node_type == "BINARY":
             return self.parse_binary_operator(Expression_Node(Literal_Exp(literal), line=line), node_stack, line)
@@ -103,7 +103,8 @@ class Parser:
                 node_stack.push(func)
                 return self.parse_expression(node_stack, line)
             return func
-            
+        elif node_stack.peek().node_type in ["EQUALS", "QUOTATION"]:
+            return literal
         raise Exception("Unexpected Token " + node_stack.peek().node_type)
 
     def parse_expression(self, node_stack, line):
@@ -138,8 +139,20 @@ class Parser:
                         return self.parse_expression(node_stack, line)
                     return bif
                 raise Exception("Unexpected end of function call on line " + line)
+            elif node_stack.peek().node_type in ["GO-DEF", "NO-PARAM", "STRING", "PRINT"]:
+                return node_stack.pop()
+            elif node_stack.peek().node_type == "QUOTATION":
+                return self.parse_string(node_stack, line)
             raise Exception("Unexpected Token " + node_stack.peek().node_type) 
         raise Exception("Unexpected parsing failure")
+
+    def statement_str(self, statement):
+        if statement == '':
+            return ''
+        s = statement.line if statement != '' else ''
+        for n in statement.children:
+            s += " " + n.str_statement() if isinstance(n, Expression_Node) else " " + str(n.content)
+        return s
 
     def syntax_err(self, expected, line, statement, context=""):
         stmt = self.statement_str(statement)
@@ -174,12 +187,11 @@ class Parser:
         while not node_stack.is_empty():
             if node_stack.peek().node_type == "COMMA":
                 arg_nodes.append(node_stack.pop())
-            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL", "IDENTIFIER"]:
+            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL", "IDENTIFIER", "QUOTATION"]:
                 self.syntax_err("Expression", line, statement, context="Arguments definition")
             while not node_stack.is_empty() and node_stack.peek().node_type != "COMMA":
                 arg_stack.push(node_stack.pop())
             arg_stack = utils.flip_stack(arg_stack)
-
             if not arg_stack.is_empty():
                 if arg_stack.peek().node_type == "RIGHT_PAREN":
                     self.syntax_err("Expression", line, statement, context="Arguments definition")
@@ -193,30 +205,60 @@ class Parser:
             node_stack.push(arg_stack.pop())
         return Node("ARGUMENTS", line=line, children=arg_nodes)
 
+    def parse_string(self, node_stack, line):
+        s = []
+        if node_stack.peek().node_type == "QUOTATION":
+            start = node_stack.pop()
+            if not node_stack.is_empty():
+                while node_stack.peek().node_type != "QUOTATION":
+                    if node_stack.peek().node_type == "STRING":
+                        s.append(node_stack.pop())
+                    else:
+                        raise SyntaxError("Expected STRING literal on line " + line)
+                if node_stack.peek().node_type == "QUOTATION":
+                    return Node("STRING_EXP", line=line, children=[start]+s+[node_stack.pop()])
+            raise SyntaxError("Unexpected end of STRING on line " + line)
+        raise SyntaxError("Expected start of STRING on line " + line)
+
     def parse_statement(self, node_stack, line):
         grammar_rules = constants.GRAMMAR_RULES
-        statement = Node("STATEMENT", line=line)
-        while not node_stack.is_empty():
-            rule = grammar_rules[node_stack.peek().node_type]
-            statement.add_child(node_stack.pop())
-            if isinstance(rule, dict):
-                rule = rule[node_stack.peek().node_type]
-                if node_stack.peek().node_type == "EQUALS":
-                    statement.add_child(node_stack.pop())
-            for elem in rule:
-                if node_stack.is_empty():
-                    raise SyntaxError("Unexpected end of statement on line " + line)
-                elif elem == node_stack.peek().node_type:
-                    statement.add_child(node_stack.pop())
-                elif elem == "PARAMETERS":
-                    statement.add_child(self.parse_parameters(node_stack, line, statement))
-                elif elem == "ARGUMENTS":
-                    statement.add_child(self.parse_arguments(node_stack, line, statement))
-                elif elem == "EXPRESSION":
+        statement = Node("Line", line=line)
+        rule = grammar_rules[node_stack.peek().node_type]
+        statement.add_child(node_stack.pop())
+        if isinstance(rule, dict):
+            rule = rule[node_stack.peek().node_type]
+            if node_stack.peek().node_type == "EQUALS":
+                statement.add_child(node_stack.pop())
+        for elem in rule:
+            if node_stack.is_empty():
+                raise SyntaxError("Unexpected end of statement on line " + line)
+            elif elem == node_stack.peek().node_type:
+                statement.add_child(node_stack.pop())
+            elif elem == "PARAMETERS":
+                statement.add_child(self.parse_parameters(node_stack, line, statement))
+            elif elem == "ARGUMENTS":
+                statement.add_child(self.parse_arguments(node_stack, line, statement))
+            elif elem == "EXPRESSION":
+                statement.add_child(self.parse_expression(node_stack, line))
+            elif elem == "STRING":
+                if node_stack.peek().node_type in constants.EXPRESSION_START:
                     statement.add_child(self.parse_expression(node_stack, line))
+                elif statement.children[-1].node_type == "PRINT":
+                    statement.children[-1].add_child(self.parse_string(node_stack, line))
                 else:
-                    raise SyntaxError("Expected element [" + elem + "] on line " + line)
-            if not node_stack.is_empty():
+                    raise SyntaxError("Expected PRINT statement on line " + line)
+            else:
+                raise SyntaxError("Expected element [" + elem + "] on line " + line)
+        if not node_stack.is_empty():
+            if node_stack.peek().node_type == "EQUALS":
+                statement.add_child(node_stack.pop())
+                exp = self.parse_expression(node_stack, line)
+                if not node_stack.is_empty():
+                    raise SyntaxError("Parsing failed on line " + line + ". Elements still on stack")
+                statement.add_child(exp)
+            elif node_stack.peek().node_type in constants.EXPRESSION_START:
+                statement.add_child(self.parse_expression(node_stack, line))
+            else:
                 raise SyntaxError("Parsing failed on line " + line + ". Elements still on stack")
         return statement
 
