@@ -3,12 +3,20 @@
 [![pipeline status](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/badges/master/pipeline.svg)](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/commits/master)
 ![GitHub](https://img.shields.io/github/license/barrettotte/GenshiBASIC-Interpreter.svg)
 
-An interpreter for 原始 (Genshi) BASIC; A BASIC dialect inspired by Commodore 64 BASICv2.
+An interpreter for 原始 (Genshi) BASIC; A BASIC dialect based on Commodore 64 BASICv2.
 
 This is my first attempt at writing an interpreter and a python package.
 
 Even though writing an interpreter for a custom BASIC dialect is pretty useless, the same 
 lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.
+
+
+## 原始 BASIC
+Genshi BASIC has 50 keywords and 7 symbolic operators. The grammar rules were taken from Commodore 64 BASICv2
+and changed to fit the scope of this project with my limited knowledge of parsing/interpreting.
+
+Essentially, I stripped out all of the memory manipulation and I/O (except PRINT). Otherwise, 
+I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
 
 
 ## Install
@@ -54,21 +62,14 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 ```
 
 
-## 原始 BASIC
-Genshi BASIC has 50 keywords and 6 symbolic operators. The grammar rules were taken from Commodore 64 BASICv2
-and changed to fit the scope of this project and my limited knowledge of parsing/interpreting.
-
-Essentially, I stripped out all of the memory manipulation and I/O (except PRINT). Otherwise, 
-I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
-
-
 ## Keywords
 | Keyword   | Description                                | Syntax                                       |
 | --------- | ------------------------------------------ | -------------------------------------------- |
 | ABS       | Absolute value of numeric                  | ```ABS(-10)``` -> 10                         |
 | AND       | Boolean AND                                | ```3>2 AND 5<6``` -> -1 (true)               |
-| ASC       | ASCII Value of first character             | ```ASC("ABC")``` -> 65                       |
-| ATN       | Arc Tangent of numeric angle (radians)     | ```ATN(1)*4``` -> 3.1415266                  |
+| ASC       | ASCII value of first character             | ```ASC("ABC")``` -> 65                       |
+| BIN$      | Return binary string of numeric            | ```BIN$(1)```                                |
+| CAT$      | Concatenate two expressions as a string    | ```PRINT CAT$("HELLO", X+1)```-> "HELLOX+1"  |
 | CHR$      | Convert numeric (0-255) to ASCII character | ```CHR$(65)``` -> "A"                        |
 | CLR       | Deletes variables, arrays, defs, etc.      | ```CLR```                                    |
 | COS       | Cosine of numeric angle (radians)          | ```COS(0)``` -> 1                            |
@@ -81,10 +82,10 @@ I would be better off making a Commodore 64 VM instead of an interpreter to add 
 | FN        | Executes defined function                  | ```FN FTEST(3)``` -> 9                       |
 | FOR       | Declare a for loop                         | ```FOR X=0 TO 5: PRINT X: ENDFOR``` -> 0...5 |
 | GE        | >= relational operator                     | ```IF I GE 0```                              |
-| GLUE      | Concatenate two expressions as a string    | ```PRINT GLUE("HELLO", X+1)``` -> "HELLOX+1" |
 | GOSUB     | Jump to subroutine at line number          | ```GOSUB 1000```                             |
 | GOTO      | Jump to line number                        | ```GOTO 500```                               |
 | GT        | > relational operator                      | ```IF I GT 0```                              |
+| HEX$      | Return hex string of numeric               | ```HEX$(15)```                               |
 | IF        | Start if statement                         | ```IF A$="" THEN PRINT "EMPTY"``` -> "EMPTY" |
 | INT       | Round a numeric                            | ```INT(1.53)``` -> 1                         |
 | LE        | <= relational operator                     | ```IF I LE 0```                              |
@@ -94,10 +95,10 @@ I would be better off making a Commodore 64 VM instead of an interpreter to add 
 | LT        | < relational operator                      | ```IF I LT 0```                              |
 | LOG       | Natural logarithm of numeric               | ```LOG(10)``` -> 2.30258509                  |
 | MID$      | Substring from numeric to numeric (0-255)  | ```MID$(A$, 1, 3)```                         |
-| MOD       | Modulus of numeric                         | ```4 MOD 3``` -> 1                           |
 | NE        | != relational operator                     | ```IF I NE 4```                              |
 | NOT       | Boolean NOT                                | ```IF NOT A=1 AND B$<>"TEST" THEN ```        |
 | OR        | Boolean OR                                 | ```4<2 OR 1>9``` -> 0 (false)                |
+| PI        | Return numeric PI * X                      | ```X=PI(2)```                                |
 | PRINT     | Print to screen                            | ```PRINT "HELLO"``` -> "HELLO"               |
 | PRINTL    | Print line to screen                       | ```PRINTL "HELLO"``` -> "HELLO\n"            |
 | REM       | Comments                                   | ```REM THIS IS A COMMENT```                  |
@@ -106,24 +107,21 @@ I would be better off making a Commodore 64 VM instead of an interpreter to add 
 | RND       | Random float from 0.0 to 1.0               | ```INT(RND(1)*100)``` -> 65                  |
 | SGN       | Return sign of numeric -1,0,1              | ```SGN(-11)``` -> -1                         |
 | SIN       | Sine of numeric angle (radians)            | ```SIN(1)``` -> 0.8141470985                 |
-| SPC       | Add spaces in print statement              | ```PRINT "HELLO" SPC(10) "WORLD"```          |
+| SPC$      | Return x spaces as string literal          | ```PRINT GLUE$("HELLO", SPC$(10))```         |
 | SQR       | Square root of numeric                     | ```SQR(4)``` -> 2                            |
 | STEP      | Used as iteration amount in for loop       | ```FOR X=1 TO 3 STEP 0.5```                  |
 | STR$      | Convert numeric to string                  | ```STR$(1E11)``` -> "1E+11"                  |
-| TAB       | Print a tab                                | ```PRINT "I:" TAB(10);I```                   |
 | TAN       | Tangent of numeric angle (radians)         | ```TAN(1)``` -> 1.55740772                   |
 | THEN      | Second half of if statement                | ```IF $A="" THEN PRINT "EMPTY"```            |
 | TO        | Range keyword in for loop                  | ```FOR X=1 TO 3: PRINT "HELLO"```            |
 | XOR       | Boolean Exclusive OR                       | ```IF $A="" XOR $B="" THEN ...```            |
-| Operators | arithmetic: ```+, -, *, \, ^```, assignment: ```=``` |                                    | 
+| Operators | arithmetic: ```+, -, *, \, ^, %```, assignment: ```=``` |                                    | 
 
 
 ## Notable differences vs Commodore 64 BASICv2
 * As previously mentioned, all memory manipulation and I/O (except ```PRINT```) is stripped out.
 * Replaced ```NEXT``` with ```ENDFOR``` to make parsing easier.
 * Keyword ```STEP``` is necessary in ```FOR``` statements.
-* Added ```XOR``` keyword for exclusive OR operator.
-* Added ```MOD``` keyword for modulus operator.
 * Replaced ```=, >, <, <>, <=, =<, >=, =>``` with ```EQ, GT, LT, NE, LE, GE```
   * I decided to mix the way CLP, SQL, and CFML handle relational operators; this made parsing tremendously easier.
 * Identifiers can contain characters they normally shouldn't (!,@,#,[0-9],etc) (lazy lexing)
@@ -134,7 +132,7 @@ I would be better off making a Commodore 64 VM instead of an interpreter to add 
   * ```10 "HELLO" + "WORLD"``` would not work; you would have to do ```10 A$="HELLO" 11 B$="WORLD" 12 A$ + B$```
 * Since I made relational operators longer, I bumped the max column count of each line to 64 characters
 * Max program length is 64KB (65,536 bytes) lines
-* To handle string literal concatentation easily, I added ```GLUE```. String variables can still be concatenated normally ```X$=Y$+Z$```. This was added to finish the parser faster.
+* To handle string literal concatentation easily, I added ```CAT$```. String variables can still be concatenated normally ```X$=Y$+Z$```. This was added to finish the parser faster.
 * Currently there are no print format specifiers, I added ```PRINTL``` to provide a simple print line function
 
 
