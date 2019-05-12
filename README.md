@@ -18,37 +18,37 @@ lexing, parsing, and interpreting fundamentals I learned can be applied to other
 ## GenshiBASIC Package Examples
 ```python
 from GenshiBASIC import GenshiBASIC
-genshiBas = GenshiBASIC.New()
+genshiBasic = GenshiBASIC.New()
 # Source code can be passed as string, File, or filepath string (with is_file_path=True)
 
 # --- Interpreter ---
 with open('./programs/test.bas', 'r') as f:
-    genshiBas.interpret(f)
+    genshiBasic.interpret(f)
 
-genshiBas.interpret('./programs/test.bas', is_file_path=True)
+genshiBasic.interpret('./programs/test.bas', is_file_path=True)
 
-genshiBas.interpret('10 PRINT "HELLO GENSHI BASIC"')
+genshiBasic.interpret('10 PRINT "HELLO GENSHI BASIC"')
 
 
 # --- Warnings / Exceptions ---
-genshiBas.interpret('../somewhere/missing.bas', is_file_path=True) # Throws FileNotFound exception
-genshiBas.interpret('./programs/test.txt', is_file_path=True) # Raises UserWarning for file extension
+genshiBasic.interpret('../somewhere/missing.bas', is_file_path=True) # Throws FileNotFound exception
+genshiBasic.interpret('./programs/test.txt', is_file_path=True) # Raises UserWarning for file extension
 
 # Missing line numbers (raises SyntaxWarning)
-genshiBas.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HELLO WORLD"\n2 A=123
+genshiBasic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HELLO WORLD"\n2 A=123
 
 
 # --- Lexer ---
-genshiBas.lex('10 PRINT "HELLO WORLD"') # returns tokens
+genshiBasic.lex('10 PRINT "HELLO WORLD"') # returns tokens
 
 with open('./programs/test.bas', 'r') as f:
-    genshiBas.make_tokens(f) # same functionality as lex()
+    genshiBasic.make_tokens(f) # same functionality as lex()
 
-genshiBas.make_lexemes('./programs/test.bas', is_file_path=True) # returns lexemes
+genshiBasic.make_lexemes('./programs/test.bas', is_file_path=True) # returns lexemes
 
 
 # --- Parser ---
-genshiBas.parse('10 PRINT "HELLO WORLD"') # returns parse tree
+genshiBasic.parse('10 PRINT "HELLO WORLD"') # returns parse tree
 
 
 # --- Interpreter ---
@@ -143,6 +143,8 @@ These changes objectively make this version of BASIC pretty useless, but this is
   * If an operator is specified in an identifier such as ```LET A+=4``` it is evaluated as ```LET A + = 4 (EXCEPTION)```
 * Lines are stripped of whitespace > 1; To retain whitespace in printing use ```SPC(N)```
 * A string variable by convention should end with '$', but I won't throw an exception.
+* String concatentation must be done with variables
+  * ```10 "HELLO" + "WORLD"``` would not work; you would have to do ```10 A$="HELLO" 11 B$="WORLD" 12 A$ + B$```
 
 
 ## Possible future goals
