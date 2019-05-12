@@ -154,6 +154,10 @@ These changes objectively make this version of BASIC pretty useless, but this is
 * Print format specifiers ```',', ';', ':'```
 
 
+## Running in Docker
+* ```docker build --tag=genshibasic .```
+
+
 ## References
 * Compilers and Interpreters Chapter 4 http://flint.cs.yale.edu/cs421/lectureNotes/c04.pdf
 * Commodore 64 BASIC 
