@@ -26,8 +26,9 @@ class Lexer:
             line = self.clean_line(s)
             line_num = line[0] if len(line) > 0 else ""
             if line_num.isdigit():
-                self.lexemes[line_num] = line[1:]
-                if int(line_num) == constants.MAX_LINES: 
+                if int(line_num) <= constants.MAX_LINES:
+                    self.lexemes[line_num] = line[1:]
+                else:
                     warnings.raise_max_lines(len(src)) 
                     break
         return self.lexemes
@@ -61,6 +62,7 @@ class Lexer:
                     for k in range(i+1, end):
                         tokens[k].token_type = "STRING"
                         tokens[k].literal = "STRING"
+                        tokens[k].lexeme = tokens[k].lexeme[1:-1]
             elif token.token_type == "LITERAL":
                 if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
                     token.literal = "IDENTIFIER"

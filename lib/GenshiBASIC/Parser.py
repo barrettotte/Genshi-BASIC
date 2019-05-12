@@ -68,6 +68,8 @@ class Parser:
                 right = self.parse_unary_operator(node_stack.pop(), node_stack, line)
             elif node_stack.peek().node_type in ["ONE-PARAM", "TWO-PARAM", "THREE-PARAM"]:
                 right = Expression_Node(Function_Exp(node_stack.pop(), self.parse_arguments(node_stack, line)), line)
+            elif node_stack.peek().node_type == "QUOTATION":
+                raise SyntaxError("Unexpected start of STRING expression on line " + line)
             else:
                 right = node_stack.pop()
             exp = Expression_Node(Binary_Exp(left, op, right), line=line)
@@ -222,7 +224,7 @@ class Parser:
 
     def parse_statement(self, node_stack, line):
         grammar_rules = constants.GRAMMAR_RULES
-        statement = Node("Line", line=line)
+        statement = Node("LINE", line=line)
         rule = grammar_rules[node_stack.peek().node_type]
         statement.add_child(node_stack.pop())
         if isinstance(rule, dict):

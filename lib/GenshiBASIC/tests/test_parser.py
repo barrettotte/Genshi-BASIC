@@ -130,6 +130,7 @@ class Test_Parser(unittest.TestCase):
         self.genshiBasic.parse('10 IF N EQ 0 THEN END')
         self.genshiBasic.parse('10 IF N EQ 0 THEN XYZ(1,3+A)')
         self.genshiBasic.parse('10 IF N EQ 0 THEN X = SIN(X)')
+        self.genshiBasic.parse('10 IF INT(I/15)/(I/15) EQ 1 THEN PRINT "FIZZBUZZ"')
 
     def test_string(self):
         self.genshiBasic.parse('10 X="ABC"')

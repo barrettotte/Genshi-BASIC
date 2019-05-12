@@ -66,9 +66,7 @@ class New:
         src = self.load_src(src, is_file_path)
         tokens = self.lexer.lex(src)
         parse_tree = self.parser.parse(tokens)
-        # INTERPRET ...
-        results = parse_tree
-        return results
+        return self.interpreter.interpret(parse_tree)
 
     
     def print_tokens(self, tokens_dict):

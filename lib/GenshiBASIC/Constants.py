@@ -1,5 +1,5 @@
-COL_LEN = 40
-MAX_LINES = 63999
+COL_LEN = 64
+MAX_LINES = 65536
 
 OPERATORS = [ 
     { "char": "+",  "type": "BINARY" },
@@ -35,6 +35,7 @@ KEYWORDS = [
     { "word": "FN",     "type": "FUNCTION"    },
     { "word": "FOR",    "type": "FOR-DEF"     },
     { "word": "GE",     "type": "BINARY"      },
+    { "word": "GLUE",   "type": "TWO-PARAM"   },
     { "word": "GOSUB",  "type": "GO-DEF"      },
     { "word": "GOTO",   "type": "GO-DEF"      },
     { "word": "GT",     "type": "BINARY"      },
@@ -53,6 +54,7 @@ KEYWORDS = [
     { "word": "NOT",    "type": "UNARY"       },
     { "word": "OR",     "type": "BINARY"      },
     { "word": "PRINT",  "type": "PRINT"       },
+    { "word": "PRINTL", "type": "PRINT"       },
     { "word": "REM",    "type": "COMMENT"     },
     { "word": "RETURN", "type": "NO-PARAM"    },
     { "word": "RIGHT$", "type": "TWO-PARAM"   },

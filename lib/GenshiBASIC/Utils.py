@@ -1,4 +1,4 @@
-import json, os, io, datetime
+import json, os, io, datetime, re
 
 
 def get_timestamp():
@@ -31,8 +31,12 @@ def print_dict(d):
     for key, val in d.items():
         print(key + "  " + str(val))
 
-def split_and_filter(s, delim=" ", filt=None, is_strip=True):
-    return list(filter(filt, (s.strip() if is_strip else s).split(delim)))
+def split_and_filter(s, is_strip=True):
+    cleaned = []
+    x = [p for p in re.split("( |\\\".*?\\\"|'.*?')", s) if p.strip()]
+    for s in x: 
+        cleaned += filter(None, re.split('(\")', s))
+    return cleaned
 
 
 def push_bottom(stack, item):

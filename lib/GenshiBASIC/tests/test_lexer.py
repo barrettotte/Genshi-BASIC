@@ -32,7 +32,7 @@ class Test_Lexer(unittest.TestCase):
 
     def test_lexemes_HelloWorld(self):
         res = self.genshiBasic.make_lexemes('10 PRINT "HELLO WORLD"')
-        self.assertTrue(res['10'] == ['PRINT', '"', 'HELLO', 'WORLD', '"'])
+        self.assertTrue(res['10'] == ['PRINT', '"', ' HELLO WORLD ', '"'])
 
     def test_lexemes_Blank(self):
         res = self.genshiBasic.make_lexemes('')
@@ -41,21 +41,22 @@ class Test_Lexer(unittest.TestCase):
     def test_lexemes_NoLineNumber(self):
         with self.assertWarns(SyntaxWarning):
             res = self.genshiBasic.make_lexemes('PRINT "HELLO THERE"')
-            self.assertTrue(res['1'] == ['PRINT', '"', 'HELLO', 'THERE', '"'])
+            self.assertTrue(res['1'] == ['PRINT', '"', ' HELLO THERE ', '"'])
 
     def test_lexemes_MaxLineNumber(self):
         with self.assertWarns(SyntaxWarning):
-            res = self.genshiBasic.make_lexemes('63999 LET X=3\n67000 LET Y=4')
+            res = self.genshiBasic.make_lexemes('63999 LET X=3\n70000 LET Y=4')
+            print(res)
             self.assertTrue(len(res) == 1) # All lines after max are skipped
     
     def test_lexemes_MaxColLength(self):
         with self.assertWarns(SyntaxWarning):
-            res = self.genshiBasic.make_lexemes('10 PRINT "' + ("A"*50) + '"')
+            res = self.genshiBasic.make_lexemes('10 PRINT "' + ("A"*64) + '"')
             self.assertTrue(len(res['10']) == 3) # last quotation lexeme was ignored
 
     def test_lexemes_ExampleProgram(self):
         res = self.genshiBasic.make_lexemes(self.example_program)
-        expected_lens = [4, 9, 2, 1, 10, 10, 6, 4, 5]
+        expected_lens = [4, 9, 2, 1, 9, 10, 6, 4, 5]
         self.assertTrue(len(res) == len(expected_lens))
         i = 0
         for k,v in res.items():
@@ -75,12 +76,11 @@ class Test_Lexer(unittest.TestCase):
     def test_tokens_HelloWorld(self):
         res = self.genshiBasic.make_tokens('10 PRINT "HELLO WORLD"')
         tokens = res['10']
-        expected = ["PRINT", "QUOTATION", "STRING", "STRING", "QUOTATION"]
+        expected = ["PRINT", "QUOTATION", "STRING", "QUOTATION"]
         self.assertTrue(len(tokens) == len(expected))
         for i in range(len(tokens)):
             self.assertTrue(tokens[i].token_type == expected[i])
         self.assertTrue(tokens[2].literal == "STRING")
-        self.assertTrue(tokens[3].literal == "STRING")
         
     def test_tokens_Blank(self):
         res = self.genshiBasic.make_tokens('')
@@ -90,12 +90,11 @@ class Test_Lexer(unittest.TestCase):
         with self.assertWarns(SyntaxWarning):
             res = self.genshiBasic.make_tokens('PRINT "HELLO THERE"')
             tokens = res['1']
-            expected = ["PRINT", "QUOTATION", "STRING", "STRING", "QUOTATION"]
+            expected = ["PRINT", "QUOTATION", "STRING", "QUOTATION"]
             self.assertTrue(len(tokens) == len(expected))
             for i in range(len(tokens)):
                 self.assertTrue(tokens[i].token_type == expected[i])
             self.assertTrue(tokens[2].literal == "STRING")
-            self.assertTrue(tokens[3].literal == "STRING")
     
     def test_tokens_MissingQuotation(self):
         with self.assertRaises(SyntaxError):
@@ -103,7 +102,7 @@ class Test_Lexer(unittest.TestCase):
     
     def test_tokens_ExampleProgram(self):
         res = self.genshiBasic.make_tokens(self.example_program)
-        expected_lens = [4, 9, 2, 1, 10, 10, 6, 4, 5]
+        expected_lens = [4, 9, 2, 1, 9, 10, 6, 4, 5]
         self.assertTrue(len(res) == len(expected_lens))
         i = 0
         for k,v in res.items():
