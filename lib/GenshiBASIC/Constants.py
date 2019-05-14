@@ -7,6 +7,7 @@ OPERATORS = [
     { "char": "/",  "type": "BINARY" },
     { "char": "*",  "type": "BINARY" },
     { "char": "^",  "type": "BINARY" },
+    { "char": "%",  "type": "BINARY" },
     { "char": "=",  "type": "EQUALS" },
 ]
 
@@ -20,58 +21,56 @@ PUNCTUATION = [
 ]
 
 KEYWORDS = [
-    { "word": "ABS",    "type": "ONE-PARAM"   },
-    { "word": "AND",    "type": "BINARY"      },
+    { "word": "ABS",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "AND",    "type": "BINARY"      }, # DONE
     { "word": "ASC",    "type": "ONE-PARAM"   },
-    { "word": "ATN",    "type": "ONE-PARAM"   },
-    { "word": "BIN$",   "type": "ONE-PARAM"   },
+    { "word": "BIN$",   "type": "ONE-PARAM"   }, # DONE
     { "word": "CAT$",   "type": "TWO-PARAM"   },
-    { "word": "CHR$",   "type": "ONE-PARAM"   },
+    { "word": "CHR$",   "type": "ONE-PARAM"   }, # DONE
     { "word": "CLR",    "type": "NO-PARAM"    },
-    { "word": "COS",    "type": "ONE-PARAM"   },
+    { "word": "COS",    "type": "ONE-PARAM"   }, # DONE
     { "word": "DEF",    "type": "FUNC-DEC"    },
     { "word": "DIM",    "type": "ARR-DEC"     },
     { "word": "END",    "type": "NO-PARAM"    },
-    { "word": "EQ",     "type": "BINARY"      },
-    { "word": "EXP",    "type": "ONE-PARAM"   },
+    { "word": "EQ",     "type": "BINARY"      }, # DONE
+    { "word": "EXP",    "type": "ONE-PARAM"   }, # DONE
     { "word": "FN",     "type": "FUNCTION"    },
     { "word": "FOR",    "type": "FOR-DEF"     },
-    { "word": "GE",     "type": "BINARY"      },
+    { "word": "GE",     "type": "BINARY"      }, # DONE
     { "word": "GOSUB",  "type": "GO-DEF"      },
     { "word": "GOTO",   "type": "GO-DEF"      },
-    { "word": "GT",     "type": "BINARY"      },
-    { "word": "HEX$",   "type": "ONE-PARAM"   },
+    { "word": "GT",     "type": "BINARY"      }, # DONE
+    { "word": "HEX$",   "type": "ONE-PARAM"   }, # DONE
     { "word": "IF",     "type": "IF-DEF"      },
-    { "word": "INT",    "type": "ONE-PARAM"   },
-    { "word": "LE",     "type": "BINARY"      },
+    { "word": "INT",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "LE",     "type": "BINARY"      }, # DONE
     { "word": "LEFT$",  "type": "TWO-PARAM"   },
     { "word": "LEN",    "type": "ONE-PARAM"   },
     { "word": "LET",    "type": "VAR-DEC"     },
-    { "word": "LT",     "type": "BINARY"      },
-    { "word": "LOG",    "type": "ONE-PARAM"   },
-    { "word": "MOD",    "type": "BINARY"      },
+    { "word": "LT",     "type": "BINARY"      }, # DONE
+    { "word": "LOG",    "type": "ONE-PARAM"   }, # DONE
     { "word": "MID$",   "type": "THREE-PARAM" },
     { "word": "ENDFOR", "type": "FOR-END"     },
-    { "word": "NE",     "type": "BINARY"      },
-    { "word": "NOT",    "type": "UNARY"       },
-    { "word": "OR",     "type": "BINARY"      },
-    { "word": "PI",     "type": "ONE-PARAM"   },
+    { "word": "NE",     "type": "BINARY"      }, # DONE
+    { "word": "NOT",    "type": "UNARY"       }, # DONE
+    { "word": "OR",     "type": "BINARY"      }, # DONE
+    { "word": "PI",     "type": "ONE-PARAM"   }, # DONE
     { "word": "PRINT",  "type": "PRINT"       },
     { "word": "PRINTL", "type": "PRINT"       },
-    { "word": "REM",    "type": "COMMENT"     },
+    { "word": "REM",    "type": "COMMENT"     }, # DONE
     { "word": "RETURN", "type": "NO-PARAM"    },
     { "word": "RIGHT$", "type": "TWO-PARAM"   },
-    { "word": "RND",    "type": "ONE-PARAM"   },
-    { "word": "SGN",    "type": "ONE-PARAM"   },
-    { "word": "SIN",    "type": "ONE-PARAM"   },
-    { "word": "SPC$",   "type": "ONE-PARAM"   },
-    { "word": "SQR",    "type": "ONE-PARAM"   },
+    { "word": "RND",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "SGN",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "SIN",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "SPC$",   "type": "ONE-PARAM"   }, # DONE
+    { "word": "SQR",    "type": "ONE-PARAM"   }, # DONE
     { "word": "STEP",   "type": "FOR-STEP"    },
-    { "word": "STR$",   "type": "ONE-PARAM"   },
-    { "word": "TAN",    "type": "ONE-PARAM"   },
+    { "word": "STR$",   "type": "ONE-PARAM"   }, # DONE
+    { "word": "TAN",    "type": "ONE-PARAM"   }, # DONE
     { "word": "THEN",   "type": "THEN"        },
     { "word": "TO",     "type": "FOR-TO"      },
-    { "word": "XOR",    "type": "BINARY"      }
+    { "word": "XOR",    "type": "BINARY"      }  # DONE
 ]
 
 GRAMMAR_RULES = { 
@@ -96,3 +95,22 @@ EXPRESSION_START = [
   "IDENTIFIER", "LITERAL", "LEFT_PAREN", "UNARY", "ONE-PARAM", "TWO-PARAM", "THREE-PARAM", 
   "NO-PARAM", "QUOTATION"
 ]
+
+FUNCTION_RULES = {
+  "ABS":  ["NUMERIC"],
+  "BIN$": ["NUMERIC"],
+  "CHR$": ["NUMERIC"],
+  "COS":  ["NUMERIC"],
+  "EXP":  ["NUMERIC"],
+  "HEX$": ["NUMERIC"],
+  "INT":  ["NUMERIC"],
+  "PI":   ["NUMERIC"],
+  "LOG":  ["NUMERIC"],
+  "RND":  ["NUMERIC"],
+  "SIN":  ["NUMERIC"],
+  "SGN":  ["NUMERIC"],
+  "SPC$": ["NUMERIC"],
+  "SQR":  ["NUMERIC"],
+  "STR$": ["NUMERIC"],
+  "TAN":  ["NUMERIC"],
+}

@@ -64,10 +64,8 @@ class Lexer:
                         tokens[k].literal = "STRING"
                         tokens[k].lexeme = tokens[k].lexeme[1:-1]
             elif token.token_type == "LITERAL":
-                if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS":
-                    token.literal = "IDENTIFIER"
-                else:
-                    token.literal = "NUMERIC" if token.lexeme.isnumeric() else "IDENTIFIER"
+                if i < (len(tokens)-1) and tokens[i+1].token_type == "EQUALS" or token.lexeme.isidentifier():
+                    token.literal = "IDENTIFIER" # clean this branch up
             elif i > 0 and token.lexeme == "-" and tokens[i-1].token_type in ["RIGHT_PAREN", "LITERAL"]:
                 tokens[i].token_type = "BINARY"
         if quote_count % 2 != 0: 

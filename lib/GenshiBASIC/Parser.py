@@ -185,11 +185,10 @@ class Parser:
         if not node_stack.peek().node_type == "LEFT_PAREN":
             self.syntax_err("'('", line, statement, context="Arguments definition")
         arg_nodes.append(node_stack.pop())
-        
         while not node_stack.is_empty():
             if node_stack.peek().node_type == "COMMA":
                 arg_nodes.append(node_stack.pop())
-            elif not node_stack.peek().node_type in ["LEFT_PAREN", "UNARY", "LITERAL", "IDENTIFIER", "QUOTATION"]:
+            elif not node_stack.peek().node_type in constants.EXPRESSION_START:
                 self.syntax_err("Expression", line, statement, context="Arguments definition")
             while not node_stack.is_empty() and node_stack.peek().node_type != "COMMA":
                 arg_stack.push(node_stack.pop())
@@ -261,6 +260,7 @@ class Parser:
             elif node_stack.peek().node_type in constants.EXPRESSION_START:
                 statement.add_child(self.parse_expression(node_stack, line))
             else:
+                self.print_node_stack(node_stack)
                 raise SyntaxError("Parsing failed on line " + line + ". Elements still on stack")
         return statement
 
