@@ -23,11 +23,11 @@ PUNCTUATION = [
 KEYWORDS = [
     { "word": "ABS",    "type": "ONE-PARAM"   }, # DONE
     { "word": "AND",    "type": "BINARY"      }, # DONE
-    { "word": "ASC",    "type": "ONE-PARAM"   },
+    { "word": "ASC",    "type": "ONE-PARAM"   }, # DONE
     { "word": "BIN$",   "type": "ONE-PARAM"   }, # DONE
-    { "word": "CAT$",   "type": "TWO-PARAM"   },
+    { "word": "CAT$",   "type": "TWO-PARAM"   }, # DONE
     { "word": "CHR$",   "type": "ONE-PARAM"   }, # DONE
-    { "word": "CLR",    "type": "NO-PARAM"    },
+    { "word": "CLR",    "type": "NO-PARAM"    }, # DONE
     { "word": "COS",    "type": "ONE-PARAM"   }, # DONE
     { "word": "DEF",    "type": "FUNC-DEC"    },
     { "word": "DIM",    "type": "ARR-DEC"     },
@@ -44,12 +44,12 @@ KEYWORDS = [
     { "word": "IF",     "type": "IF-DEF"      },
     { "word": "INT",    "type": "ONE-PARAM"   }, # DONE
     { "word": "LE",     "type": "BINARY"      }, # DONE
-    { "word": "LEFT$",  "type": "TWO-PARAM"   },
-    { "word": "LEN",    "type": "ONE-PARAM"   },
-    { "word": "LET",    "type": "VAR-DEC"     },
+    { "word": "LEFT$",  "type": "TWO-PARAM"   }, # DONE
+    { "word": "LEN",    "type": "ONE-PARAM"   }, # DONE
+    { "word": "LET",    "type": "VAR-DEC"     }, # DONE
     { "word": "LT",     "type": "BINARY"      }, # DONE
     { "word": "LOG",    "type": "ONE-PARAM"   }, # DONE
-    { "word": "MID$",   "type": "THREE-PARAM" },
+    { "word": "MID$",   "type": "THREE-PARAM" }, # DONE
     { "word": "ENDFOR", "type": "FOR-END"     },
     { "word": "NE",     "type": "BINARY"      }, # DONE
     { "word": "NOT",    "type": "UNARY"       }, # DONE
@@ -59,7 +59,7 @@ KEYWORDS = [
     { "word": "PRINTL", "type": "PRINT"       },
     { "word": "REM",    "type": "COMMENT"     }, # DONE
     { "word": "RETURN", "type": "NO-PARAM"    },
-    { "word": "RIGHT$", "type": "TWO-PARAM"   },
+    { "word": "RIGHT$", "type": "TWO-PARAM"   }, # DONE
     { "word": "RND",    "type": "ONE-PARAM"   }, # DONE
     { "word": "SGN",    "type": "ONE-PARAM"   }, # DONE
     { "word": "SIN",    "type": "ONE-PARAM"   }, # DONE
@@ -77,6 +77,7 @@ GRAMMAR_RULES = {
   "ARR-DEC":      ["IDENTIFIER", "ARGUMENTS"],
   "FOR-DEF":      ["IDENTIFIER", "EQUALS", "EXPRESSION", "FOR-TO", "EXPRESSION", "FOR-STEP", "EXPRESSION"],
   "FOR-END":      [],
+  "NO-PARAM":     [],
   "ONE-PARAM":    ["ARGUMENTS"],
   "TWO-PARAM":    ["ARGUMENTS"],
   "THREE-PARAM":  ["ARGUMENTS"],
@@ -97,20 +98,28 @@ EXPRESSION_START = [
 ]
 
 FUNCTION_RULES = {
-  "ABS":  ["NUMERIC"],
-  "BIN$": ["NUMERIC"],
-  "CHR$": ["NUMERIC"],
-  "COS":  ["NUMERIC"],
-  "EXP":  ["NUMERIC"],
-  "HEX$": ["NUMERIC"],
-  "INT":  ["NUMERIC"],
-  "PI":   ["NUMERIC"],
-  "LOG":  ["NUMERIC"],
-  "RND":  ["NUMERIC"],
-  "SIN":  ["NUMERIC"],
-  "SGN":  ["NUMERIC"],
-  "SPC$": ["NUMERIC"],
-  "SQR":  ["NUMERIC"],
-  "STR$": ["NUMERIC"],
-  "TAN":  ["NUMERIC"],
+  "ABS":    ["NUMERIC"],
+  "ASC":    ["STRING"],
+  "BIN$":   ["NUMERIC"],
+  "CAT$":   ["ANY", "ANY"],
+  "CHR$":   ["NUMERIC"],
+  "CLR":    [],
+  "COS":    ["NUMERIC"],
+  "END":    [],
+  "EXP":    ["NUMERIC"],
+  "HEX$":   ["NUMERIC"],
+  "INT":    ["NUMERIC"],
+  "PI":     ["NUMERIC"],
+  "LEFT$":  ["STRING", "NUMERIC"],
+  "LEN":    ["STRING"],
+  "LOG":    ["NUMERIC"],
+  "MID$":   ["STRING", "NUMERIC", "NUMERIC"],
+  "RIGHT$": ["STRING", "NUMERIC"],
+  "RND":    ["NUMERIC"],
+  "SIN":    ["NUMERIC"],
+  "SGN":    ["NUMERIC"],
+  "SPC$":   ["NUMERIC"],
+  "SQR":    ["NUMERIC"],
+  "STR$":   ["NUMERIC"],
+  "TAN":    ["NUMERIC"],
 }
