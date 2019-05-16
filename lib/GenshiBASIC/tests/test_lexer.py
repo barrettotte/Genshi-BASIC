@@ -46,7 +46,6 @@ class Test_Lexer(unittest.TestCase):
     def test_lexemes_MaxLineNumber(self):
         with self.assertWarns(SyntaxWarning):
             res = self.genshi_basic.make_lexemes('63999 LET X=3\n70000 LET Y=4')
-            print(res)
             self.assertTrue(len(res) == 1) # All lines after max are skipped
     
     def test_lexemes_MaxColLength(self):

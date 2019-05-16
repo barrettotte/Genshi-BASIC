@@ -268,7 +268,6 @@ class Parser:
             elif node_stack.peek().node_type in constants.EXPRESSION_START:
                 statement.add_child(self.parse_expression(node_stack, line))
             else:
-                self.print_node_stack(node_stack)
                 raise SyntaxError("Parsing failed on line " + line + ". Elements still on stack")
         return statement
 
@@ -278,7 +277,6 @@ class Parser:
         for line, nodes in self.node_tree_to_lines(node_tree).items():
             node_stack.push_list(reversed(nodes))
             tree.add_child(self.parse_statement(node_stack, line))
-            
         return tree
     
     # This was kind of leftover from a different train of thought, everything works now, 

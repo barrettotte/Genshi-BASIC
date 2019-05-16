@@ -29,6 +29,7 @@ class Interpreter:
         elif  exp.node_type == "UNARY_EXP"   : return self.interpret_unary_exp(exp, line)
         elif  exp.node_type == "STRING_EXP"  : return '"' + exp.children[1].content + '"'
         elif  exp.node_type == "FUNCTION_EXP": return self.interpret_func_exp(exp, line)
+        elif  exp.node_type == "GROUPING_EXP": return self.interpret_group_exp(exp, line)
         raise Exception("Invalid Expression type '" + exp.node_type + "' ; line " + line)
 
     def get_func_rules(self, func, line):
@@ -65,6 +66,10 @@ class Interpreter:
             return self.function_handler(func, args, line)
         args = self.filter_nodes(exp.children[1].children[1:-1], ["COMMA"])
         return self.interpret_udf(func, args, line)
+    
+    def interpret_group_exp(self, group, line):
+        exp = group.children[1:-1]
+        return self.interpret_nodes(exp, line)
 
     def filter_nodes(self, nodes, filter_types):
         cleaned = []
@@ -87,7 +92,7 @@ class Interpreter:
                 fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line, no_param)
 
         if fdef[0].node_type == "GO-DEF":  return self.go_handler(fdef, line)
-        elif fdef[0].node_type == "PRINT": return self.print_to_buffer(fdef[1:], line)
+        elif fdef[0].node_type == "PRINT": return self.print_to_buffer(fdef, line)
         
         return self.interpret_expression(fdef[0], line)
 
@@ -135,9 +140,9 @@ class Interpreter:
 
     def print_to_buffer(self, nodes, line):
         s = ""
-        for n in nodes[0].children:
+        for n in nodes[1].children:
             if not n.node_type == "STRING":
-                s += str(self.interpret_expression(nodes[0], line))
+                s += str(self.interpret_expression(nodes[1], line))
                 break
             else:
                 s += n.content
@@ -153,7 +158,7 @@ class Interpreter:
             line_num = self.interpret_expression(nodes[1], line)
             if line_num > self.max_line:
                 raise Exception("Line number '" + line_num + "' does not exist ; line " + line)
-            self.interpret_line(self.lines[int(line_num)])
+            self.interpret_nodes(self.lines[int(line_num)])
         else:
             raise Exception("TODO")
             
@@ -207,28 +212,26 @@ class Interpreter:
             "params": [p.content for p in nodes[4].children if p.content.isidentifier()],
             "def": nodes[7:]
         }
-    
-    def interpret_line(self, line_tree):
-        line = line_tree.line
-        nodes = line_tree.children
-        print("Interpreting line " + line)
 
+    def interpret_nodes(self, nodes, line):
+        print("Interpreting line " + line)
         if nodes[0].node_type == "FUNC-DEC":
-            self.declare_function(nodes, line)
+            return self.declare_function(nodes, line)
         elif nodes[0].node_type == "VAR-DEC": 
-            self.interpret_var_dec(nodes[1:], line)
+            return self.interpret_var_dec(nodes[1:], line)
         elif nodes[0].node_type == "IDENTIFIER":
-            self.interpret_var_assign(nodes, line)  
+            return self.interpret_var_assign(nodes, line)  
         elif nodes[0].node_type == "NO-PARAM":
-            self.function_handler(nodes[0].content, [], line)
+            return self.function_handler(nodes[0].content, [], line)
         elif nodes[0].node_type == "PRINT":
-            self.print_to_buffer(nodes[1:], line)
+            return self.print_to_buffer(nodes, line)
         elif nodes[0].node_type == "GO-DEF":
-            self.go_handler(nodes, line)
+            return self.go_handler(nodes, line)
         elif nodes[0].node_type == "FUNCTION_EXP":
-            self.interpret_func_exp(nodes[0], line)
-        else:
-            raise Exception("Shouldnt be getting here!!!")
+            return self.interpret_func_exp(nodes[0], line)
+        elif nodes[0].node_type in ["BINARY_EXP", "GROUPING_EXP", "UNARY_EXP"]:
+            return self.interpret_expression(nodes[0], line)
+        raise Exception("Should never get here !!!")
 
     def load_code(self, parse_tree):
         self.max_line = int(parse_tree.children[-1].line)
@@ -241,6 +244,8 @@ class Interpreter:
         self.is_running = True
         for subtree in parse_tree.children:
             if self.is_running:
-                self.interpret_line(subtree)
+                line = subtree.line
+                nodes = subtree.children
+                self.interpret_nodes(nodes, line)
         #return self.out_buffer
         return {"identifiers": self.identifiers, "out_buffer": self.out_buffer}
