@@ -80,31 +80,28 @@ class Interpreter:
         )
         for i in range(len(args)):
             args[i] = self.interpret_expression(args[i], line)
+        no_param = fdef[0].node_type in ["PRINT", "GO-DEF"]
 
-        for n in range(len(fdef)):
+        for n in range(int(no_param), len(fdef)):
             for j in range(len(params)):
-                fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line)
-        #self.identifiers[func]['def'] = copy.deepcopy(fdef)
+                fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line, no_param)
 
-        if fdef[0].node_type == "GO-DEF": 
-            self.go_handler(fdef, line)
-        if fdef[0].node_type == "PRINT":
-            self.print_to_buffer(fdef, line)
-        else: 
-            return self.interpret_expression(fdef[0], line)
+        if fdef[0].node_type == "GO-DEF":  return self.go_handler(fdef, line)
+        elif fdef[0].node_type == "PRINT": return self.print_to_buffer(fdef[1:], line)
+        
+        return self.interpret_expression(fdef[0], line)
 
-    def inject_argument(self, exp, param, arg, line):
+    def inject_argument(self, exp, param, arg, line, no_param=False):
         print("Injecting argument '" + str(arg) + "' into " + param)
         for i in range(len(exp.children)):
             node = exp.children[i]
             if len(node.children) > 0:
-                print("^^^" + node.node_type)
                 if node.children[0].content == param:
-                    print("XXXX")
                     exp.children[i].children[0].node_type = "LITERAL"
                     exp.children[i].children[0].content = str(arg)
-            else:
-                print("....")
+            elif no_param:
+                exp.children[i].node_type = "LITERAL"
+                exp.children[i].content = str(arg)
         return exp
         
 
@@ -137,8 +134,8 @@ class Interpreter:
         return None
 
     def print_to_buffer(self, nodes, line):
-        #for n in nodes:
-        #    print(n)
+        for n in nodes:
+            print(n)
         s = ""
         for n in nodes[0].children:
             if not n.node_type == "STRING":
@@ -169,7 +166,7 @@ class Interpreter:
                 return int(literal.content)
             elif literal.content.replace("-", '', 1).replace('.','',1).isdigit():
                 return float(literal.content)
-            raise Exception("Invalid Literal type '" + literal.content + "' ; line " + line)
+            return str(literal.content).replace('"','')
         elif literal.node_type == "IDENTIFIER" and literal.content in self.identifiers.keys():
             return self.identifiers[literal.content]
         raise Exception("Identifier '" + literal.content + "' referenced before declaration ; line " + line)
