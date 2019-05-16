@@ -153,12 +153,19 @@ class Interpreter:
             self.out_buffer[-1] += s
         self.print_newline = nodes[0].content == "PRINTL"
 
+    def find_closest_line(self, line_num):
+        if line_num > self.max_line:
+            return self.max_line
+        for ln in self.lines.keys():
+            if ln > line_num:
+                return ln
+
     def go_handler(self, nodes, line):
         if nodes[0].content == "GOTO":
             line_num = self.interpret_expression(nodes[1], line)
-            if line_num > self.max_line:
-                raise Exception("Line number '" + line_num + "' does not exist ; line " + line)
-            self.interpret_nodes(self.lines[int(line_num)])
+            if line_num > self.max_line or line_num not in self.lines.keys():
+                line_num = self.find_closest_line(line_num)
+            self.interpret_nodes(self.lines[int(line_num)].children, line)
         else:
             raise Exception("TODO")
             
@@ -213,24 +220,31 @@ class Interpreter:
             "def": nodes[7:]
         }
 
+    def interpret_if(self, nodes, line):
+        if self.interpret_expression(nodes[1], line) == 1:
+            self.interpret_nodes(nodes[3:], line)
+
     def interpret_nodes(self, nodes, line):
         print("Interpreting line " + line)
-        if nodes[0].node_type == "FUNC-DEC":
+        nt = nodes[0].node_type
+        if nt == "FUNC-DEC":
             return self.declare_function(nodes, line)
-        elif nodes[0].node_type == "VAR-DEC": 
+        elif nt == "VAR-DEC": 
             return self.interpret_var_dec(nodes[1:], line)
-        elif nodes[0].node_type == "IDENTIFIER":
+        elif nt == "IDENTIFIER":
             return self.interpret_var_assign(nodes, line)  
-        elif nodes[0].node_type == "NO-PARAM":
+        elif nt == "NO-PARAM":
             return self.function_handler(nodes[0].content, [], line)
-        elif nodes[0].node_type == "PRINT":
+        elif nt == "PRINT":
             return self.print_to_buffer(nodes, line)
-        elif nodes[0].node_type == "GO-DEF":
+        elif nt == "GO-DEF":
             return self.go_handler(nodes, line)
-        elif nodes[0].node_type == "FUNCTION_EXP":
+        elif nt == "FUNCTION_EXP":
             return self.interpret_func_exp(nodes[0], line)
-        elif nodes[0].node_type in ["BINARY_EXP", "GROUPING_EXP", "UNARY_EXP"]:
+        elif nt in ["BINARY_EXP", "GROUPING_EXP", "UNARY_EXP"]:
             return self.interpret_expression(nodes[0], line)
+        elif nt == "IF-DEF":
+            return self.interpret_if(nodes, line)
         raise Exception("Should never get here !!!")
 
     def load_code(self, parse_tree):
@@ -242,10 +256,14 @@ class Interpreter:
         #print(parse_tree)
         self.load_code(parse_tree)
         self.is_running = True
-        for subtree in parse_tree.children:
-            if self.is_running:
-                line = subtree.line
-                nodes = subtree.children
-                self.interpret_nodes(nodes, line)
-        #return self.out_buffer
-        return {"identifiers": self.identifiers, "out_buffer": self.out_buffer}
+        line = -1
+        try:
+            for subtree in parse_tree.children:
+                if self.is_running:
+                    line = subtree.line
+                    nodes = subtree.children
+                    self.interpret_nodes(nodes, line)
+            #return self.out_buffer
+            return {"identifiers": self.identifiers, "out_buffer": self.out_buffer}
+        except RecursionError:
+            print("Interpreter failed. Max recursion depth exceeded ; line " + line)
