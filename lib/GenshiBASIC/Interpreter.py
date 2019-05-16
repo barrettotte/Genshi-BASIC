@@ -1,4 +1,4 @@
-import math, random
+import math, random, copy
 import Constants as constants
 
 class Interpreter:
@@ -6,6 +6,8 @@ class Interpreter:
     def __init__(self):
         self.out_buffer = []
         self.identifiers = {}
+        self.max_line = -1
+        self.lines = {}
         self.is_running = True
         self.print_newline = False
 
@@ -29,14 +31,22 @@ class Interpreter:
         elif  exp.node_type == "FUNCTION_EXP": return self.interpret_func_exp(exp, line)
         raise Exception("Invalid Expression type '" + exp.node_type + "' ; line " + line)
 
+    def get_func_rules(self, func, line):
+        if func in self.identifiers.keys():
+            return ["ANY" for p in self.identifiers[func]["params"]]
+        try:
+            return constants.FUNCTION_RULES[func]
+        except KeyError:
+            raise Exception("Function '" + func + "' referenced before declaration ; line " + line)
+
     def validate_args(self, func, args, line):
-        rules = constants.FUNCTION_RULES[func]
+        rules = self.get_func_rules(func, line)
         if len(args) != len(rules):
             msg = "Invalid number of parameters for '" + func + "'. Expected "
             raise Exception(msg + str(len(rules)) + " , got " + str(len(args)) + " ; line " + line)
         for i in range(len(args)):
             if rules[i] == "NUMERIC" and not isinstance(args[i], (int, float)):
-                raise Exception("Invalid parameter '" + args[i] + "'. Expected " + "NUMERIC ; line " + line)
+                raise Exception("Invalid parameter '" + str(args[i]) + "'. Expected " + "NUMERIC ; line " + line)
             elif rules[i] == "STRING":
                 if not isinstance(args[i], (int, float)) and (args[i].isidentifier() or '"' in args[i]):
                     args[i] = args[i].replace('"', '')
@@ -49,9 +59,54 @@ class Interpreter:
     def interpret_func_exp(self, exp, line):
         ignore = ["COMMA", "LEFT_PAREN", "RIGHT_PAREN"]
         func = exp.children[0].content
-        args = [self.interpret_expression(a, line) for a in exp.children[1].children if not a.node_type in ignore]
-        args = self.validate_args(func, args, line)
-        return self.function_handler(func, args, line)
+        if not func in self.identifiers.keys():
+            args = [self.interpret_expression(a, line) for a in exp.children[1].children if not a.node_type in ignore]
+            args = self.validate_args(func, args, line)
+            return self.function_handler(func, args, line)
+        args = self.filter_nodes(exp.children[1].children[1:-1], ["COMMA"])
+        return self.interpret_udf(func, args, line)
+
+    def filter_nodes(self, nodes, filter_types):
+        cleaned = []
+        for n in nodes:
+            if not n.node_type in filter_types:
+                cleaned.append(n)
+        return cleaned
+
+    def interpret_udf(self, func, args, line):
+        params, fdef = self.identifiers[func]['params'], copy.deepcopy(self.identifiers[func]['def'])
+        if len(args) != len(params): raise Exception(
+          "Expected '" + str(len(params)) + "' param(s), but encountered '" + str(len(args)) + "' ; line " + line
+        )
+        for i in range(len(args)):
+            args[i] = self.interpret_expression(args[i], line)
+
+        for n in range(len(fdef)):
+            for j in range(len(params)):
+                fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line)
+        #self.identifiers[func]['def'] = copy.deepcopy(fdef)
+
+        if fdef[0].node_type == "GO-DEF": 
+            self.go_handler(fdef, line)
+        if fdef[0].node_type == "PRINT":
+            self.print_to_buffer(fdef, line)
+        else: 
+            return self.interpret_expression(fdef[0], line)
+
+    def inject_argument(self, exp, param, arg, line):
+        print("Injecting argument '" + str(arg) + "' into " + param)
+        for i in range(len(exp.children)):
+            node = exp.children[i]
+            if len(node.children) > 0:
+                print("^^^" + node.node_type)
+                if node.children[0].content == param:
+                    print("XXXX")
+                    exp.children[i].children[0].node_type = "LITERAL"
+                    exp.children[i].children[0].content = str(arg)
+            else:
+                print("....")
+        return exp
+        
 
     def function_handler(self, func, args, line):
         if   func == "ABS":    return abs(args[0])
@@ -82,6 +137,8 @@ class Interpreter:
         return None
 
     def print_to_buffer(self, nodes, line):
+        #for n in nodes:
+        #    print(n)
         s = ""
         for n in nodes[0].children:
             if not n.node_type == "STRING":
@@ -94,13 +151,23 @@ class Interpreter:
             self.out_buffer.append(s)
         else:
             self.out_buffer[-1] += s
+        self.print_newline = nodes[0].content == "PRINTL"
+
+    def go_handler(self, nodes, line):
+        if nodes[0].content == "GOTO":
+            line_num = self.interpret_expression(nodes[1], line)
+            if line_num > self.max_line:
+                raise Exception("Line number '" + line_num + "' does not exist ; line " + line)
+            self.interpret_line(self.lines[int(line_num)])
+        else:
+            raise Exception("TODO")
             
     def interpret_literal_exp(self, exp, line):
         literal = exp.children[0]
         if literal.node_type == "LITERAL":
             if literal.content.isdigit():
                 return int(literal.content)
-            elif literal.content.replace('.','',1).isdigit():
+            elif literal.content.replace("-", '', 1).replace('.','',1).isdigit():
                 return float(literal.content)
             raise Exception("Invalid Literal type '" + literal.content + "' ; line " + line)
         elif literal.node_type == "IDENTIFIER" and literal.content in self.identifiers.keys():
@@ -137,28 +204,48 @@ class Interpreter:
         elif left == "NOT": return int(not right)
         raise Exception("Invalid operator '" + left + "' ; line " + line)
     
+    def declare_function(self, nodes, line):
+        ident = nodes[2].content
+        if ident in self.identifiers.keys():
+            raise Exception("Identifier '" + ident + "' has already been declared ; line " + line)
+        self.identifiers[ident] = { 
+            "params": [p.content for p in nodes[4].children if p.content.isidentifier()],
+            "def": nodes[7:]
+        }
+    
     def interpret_line(self, line_tree):
         line = line_tree.line
         nodes = line_tree.children
-        for i in range(len(nodes)):
-            if not self.is_running:
-                return
-            elif nodes[i].node_type == "VAR-DEC": 
-                self.interpret_var_dec(nodes[i+1:], line)
-            elif nodes[i].node_type == "IDENTIFIER":
-                self.interpret_var_assign(nodes[i:], line)
-            elif nodes[i].node_type == "NO-PARAM":
-                self.function_handler(nodes[i].content, [], line)
-            elif nodes[i].node_type == "PRINT":
-                self.print_to_buffer(nodes[i+1:], line)
-                self.print_newline = nodes[i].content == "PRINTL"
+        print("\nInterpreting line " + line)
+
+        if nodes[0].node_type == "FUNC-DEC":
+            self.declare_function(nodes, line)
+        elif nodes[0].node_type == "VAR-DEC": 
+            self.interpret_var_dec(nodes[1:], line)
+        elif nodes[0].node_type == "IDENTIFIER":
+            self.interpret_var_assign(nodes[1:], line)  
+        elif nodes[0].node_type == "NO-PARAM":
+            self.function_handler(nodes[0].content, [], line)
+        elif nodes[0].node_type == "PRINT":
+            self.print_to_buffer(nodes[1:], line)
+        elif nodes[0].node_type == "GO-DEF":
+            self.go_handler(nodes, line)
+        elif nodes[0].node_type == "FUNCTION_EXP":
+            self.interpret_func_exp(nodes[0], line)
+        else:
+            raise Exception("Shouldnt be getting here!!!")
+
+    def load_code(self, parse_tree):
+        self.max_line = int(parse_tree.children[-1].line)
+        for subtree in parse_tree.children:
+            self.lines[int(subtree.line)] = subtree
 
     def interpret(self, parse_tree):
-        self.is_running = True
         #print(parse_tree)
+        self.load_code(parse_tree)
+        self.is_running = True
         for subtree in parse_tree.children:
             if self.is_running:
-                print("\nInterpreting line " + subtree.line)
                 self.interpret_line(subtree)
         #return self.out_buffer
         return {"identifiers": self.identifiers, "out_buffer": self.out_buffer}

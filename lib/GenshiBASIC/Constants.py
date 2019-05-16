@@ -55,8 +55,8 @@ KEYWORDS = [
     { "word": "NOT",    "type": "UNARY"       }, # DONE
     { "word": "OR",     "type": "BINARY"      }, # DONE
     { "word": "PI",     "type": "ONE-PARAM"   }, # DONE
-    { "word": "PRINT",  "type": "PRINT"       },
-    { "word": "PRINTL", "type": "PRINT"       },
+    { "word": "PRINT",  "type": "PRINT"       }, # DONE
+    { "word": "PRINTL", "type": "PRINT"       }, # DONE
     { "word": "REM",    "type": "COMMENT"     }, # DONE
     { "word": "RETURN", "type": "NO-PARAM"    },
     { "word": "RIGHT$", "type": "TWO-PARAM"   }, # DONE

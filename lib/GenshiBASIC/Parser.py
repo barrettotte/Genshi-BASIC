@@ -189,6 +189,9 @@ class Parser:
             if node_stack.peek().node_type == "COMMA":
                 arg_nodes.append(node_stack.pop())
             elif not node_stack.peek().node_type in constants.EXPRESSION_START:
+                if node_stack.peek().node_type == "RIGHT_PAREN":
+                    node_stack.pop()
+                    return Node("ARGUMENTS", line=line, children=[])
                 self.syntax_err("Expression", line, statement, context="Arguments definition")
             while not node_stack.is_empty() and node_stack.peek().node_type != "COMMA":
                 arg_stack.push(node_stack.pop())
@@ -238,7 +241,12 @@ class Parser:
             elif elem == "PARAMETERS":
                 statement.add_child(self.parse_parameters(node_stack, line, statement))
             elif elem == "ARGUMENTS":
-                statement.add_child(self.parse_arguments(node_stack, line, statement))
+                args = self.parse_arguments(node_stack, line, statement)
+                if statement.children[-1].node_type == "IDENTIFIER":
+                    exp = Expression_Node(Function_Exp(statement.children[-1], args), line)
+                    statement.children[-1] = exp
+                else:
+                    statement.add_child(args)
             elif elem == "EXPRESSION":
                 statement.add_child(self.parse_expression(node_stack, line))
             elif elem == "STRING":
