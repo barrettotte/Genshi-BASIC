@@ -92,7 +92,7 @@ class Interpreter:
         return self.interpret_expression(fdef[0], line)
 
     def inject_argument(self, exp, param, arg, line, no_param=False):
-        print("Injecting argument '" + str(arg) + "' into " + param)
+        print("  Injecting argument '" + str(arg) + "' into " + param)
         for i in range(len(exp.children)):
             node = exp.children[i]
             if len(node.children) > 0:
@@ -134,8 +134,6 @@ class Interpreter:
         return None
 
     def print_to_buffer(self, nodes, line):
-        for n in nodes:
-            print(n)
         s = ""
         for n in nodes[0].children:
             if not n.node_type == "STRING":
@@ -213,14 +211,14 @@ class Interpreter:
     def interpret_line(self, line_tree):
         line = line_tree.line
         nodes = line_tree.children
-        print("\nInterpreting line " + line)
+        print("Interpreting line " + line)
 
         if nodes[0].node_type == "FUNC-DEC":
             self.declare_function(nodes, line)
         elif nodes[0].node_type == "VAR-DEC": 
             self.interpret_var_dec(nodes[1:], line)
         elif nodes[0].node_type == "IDENTIFIER":
-            self.interpret_var_assign(nodes[1:], line)  
+            self.interpret_var_assign(nodes, line)  
         elif nodes[0].node_type == "NO-PARAM":
             self.function_handler(nodes[0].content, [], line)
         elif nodes[0].node_type == "PRINT":
