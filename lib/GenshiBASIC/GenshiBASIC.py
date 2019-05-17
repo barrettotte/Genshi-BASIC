@@ -1,4 +1,4 @@
-import io
+import io, sys
 import Constants as constants
 import Utils as utils
 import Warnings as warnings
@@ -37,6 +37,9 @@ class New:
     def load_src(self, src, is_file_path=False):
         self.check_src_params(src, is_file_path)
         src = utils.read_file(src, throw_error=True) if is_file_path else src
+        if len(src) == 0:
+            warnings.raise_empty_file()
+            sys.exit()
         if type(src) is io.TextIOWrapper:
             ext_split = src.name.split(".")
             if ext_split[len(ext_split)-1] != "bas": 
@@ -63,11 +66,16 @@ class New:
         return self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path)))
 
     def interpret(self, src, is_file_path=False):
-        src = self.load_src(src, is_file_path)
-        tokens = self.lexer.lex(src)
-        parse_tree = self.parser.parse(tokens)
-        return self.interpreter.interpret(parse_tree)
+        return self.interpreter.interpret(self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path))))
 
+    def debug(self, src, is_file_path=False):
+        info = {"src_original": src}
+        info["src_cleaned"] = self.load_src(src, is_file_path)
+        info["lexemes"] = self.lexer.make_lexemes(info["src_cleaned"])
+        info["tokens"] = self.lexer.lex(info["src_cleaned"])
+        info["parse_tree"] = self.parser.parse(info["tokens"])
+        info["interpreted"] = self.interpreter.debug(info["parse_tree"])
+        return info
     
     def print_tokens(self, tokens_dict):
         for line_num, tokens in tokens_dict.items():

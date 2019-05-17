@@ -29,19 +29,19 @@ KEYWORDS = [
     { "word": "CHR$",   "type": "ONE-PARAM"   }, # DONE
     { "word": "CLR",    "type": "NO-PARAM"    }, # DONE
     { "word": "COS",    "type": "ONE-PARAM"   }, # DONE
-    { "word": "DEF",    "type": "FUNC-DEC"    },
+    { "word": "DEF",    "type": "FUNC-DEC"    }, # DONE
     { "word": "DIM",    "type": "ARR-DEC"     },
-    { "word": "END",    "type": "NO-PARAM"    },
+    { "word": "END",    "type": "NO-PARAM"    }, # DONE
     { "word": "EQ",     "type": "BINARY"      }, # DONE
     { "word": "EXP",    "type": "ONE-PARAM"   }, # DONE
-    { "word": "FN",     "type": "FUNCTION"    },
+    { "word": "FN",     "type": "FUNCTION"    }, # DONE
     { "word": "FOR",    "type": "FOR-DEF"     },
     { "word": "GE",     "type": "BINARY"      }, # DONE
     { "word": "GOSUB",  "type": "GO-DEF"      },
-    { "word": "GOTO",   "type": "GO-DEF"      },
+    { "word": "GOTO",   "type": "GO-DEF"      }, # DONE
     { "word": "GT",     "type": "BINARY"      }, # DONE
     { "word": "HEX$",   "type": "ONE-PARAM"   }, # DONE
-    { "word": "IF",     "type": "IF-DEF"      },
+    { "word": "IF",     "type": "IF-DEF"      }, # DONE
     { "word": "INT",    "type": "ONE-PARAM"   }, # DONE
     { "word": "LE",     "type": "BINARY"      }, # DONE
     { "word": "LEFT$",  "type": "TWO-PARAM"   }, # DONE
@@ -68,7 +68,7 @@ KEYWORDS = [
     { "word": "STEP",   "type": "FOR-STEP"    },
     { "word": "STR$",   "type": "ONE-PARAM"   }, # DONE
     { "word": "TAN",    "type": "ONE-PARAM"   }, # DONE
-    { "word": "THEN",   "type": "THEN"        },
+    { "word": "THEN",   "type": "THEN"        }, # DONE
     { "word": "TO",     "type": "FOR-TO"      },
     { "word": "XOR",    "type": "BINARY"      }  # DONE
 ]

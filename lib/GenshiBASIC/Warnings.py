@@ -25,3 +25,6 @@ def raise_file_extension(filepath):
     warnings.warn(s + "Lexer will still try to run as normal. It is suggested to change file extension to '.bas'\n", 
         UserWarning, stacklevel=10
     )
+
+def raise_empty_file():
+    warnings.warn("Source program has no lines to interpret.", UserWarning, stacklevel=10)

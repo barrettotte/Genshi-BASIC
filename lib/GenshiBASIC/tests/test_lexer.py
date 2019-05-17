@@ -34,10 +34,6 @@ class Test_Lexer(unittest.TestCase):
         res = self.genshi_basic.make_lexemes('10 PRINT "HELLO WORLD"')
         self.assertTrue(res['10'] == ['PRINT', '"', ' HELLO WORLD ', '"'])
 
-    def test_lexemes_Blank(self):
-        res = self.genshi_basic.make_lexemes('')
-        self.assertTrue(len(res) == 0)
-
     def test_lexemes_NoLineNumber(self):
         with self.assertWarns(SyntaxWarning):
             res = self.genshi_basic.make_lexemes('PRINT "HELLO THERE"')
@@ -80,10 +76,6 @@ class Test_Lexer(unittest.TestCase):
         for i in range(len(tokens)):
             self.assertTrue(tokens[i].token_type == expected[i])
         self.assertTrue(tokens[2].literal == "STRING")
-        
-    def test_tokens_Blank(self):
-        res = self.genshi_basic.make_tokens('')
-        self.assertTrue(len(res) == 0)
 
     def test_tokens_NoLineNumber(self):
         with self.assertWarns(SyntaxWarning):

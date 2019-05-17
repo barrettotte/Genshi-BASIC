@@ -27,7 +27,7 @@ class Interpreter:
         if    exp.node_type == "LITERAL_EXP" : return self.interpret_literal_exp(exp, line)
         elif  exp.node_type == "BINARY_EXP"  : return self.interpret_binary_exp(exp, line)
         elif  exp.node_type == "UNARY_EXP"   : return self.interpret_unary_exp(exp, line)
-        elif  exp.node_type == "STRING_EXP"  : return '"' + exp.children[1].content + '"'
+        elif  exp.node_type == "STRING_EXP"  : return exp.children[1].content
         elif  exp.node_type == "FUNCTION_EXP": return self.interpret_func_exp(exp, line)
         elif  exp.node_type == "GROUPING_EXP": return self.interpret_group_exp(exp, line)
         raise Exception("Invalid Expression type '" + exp.node_type + "' ; line " + line)
@@ -48,11 +48,6 @@ class Interpreter:
         for i in range(len(args)):
             if rules[i] == "NUMERIC" and not isinstance(args[i], (int, float)):
                 raise Exception("Invalid parameter '" + str(args[i]) + "'. Expected " + "NUMERIC ; line " + line)
-            elif rules[i] == "STRING":
-                if not isinstance(args[i], (int, float)) and (args[i].isidentifier() or '"' in args[i]):
-                    args[i] = args[i].replace('"', '')
-                else:
-                    raise Exception("Invalid parameter '" + str(args[i]) + "'. Expected " + "STRING or IDENTIFIER ; line " + line)
             elif rules[i] == "ANY" and type(args[i]) is str:
                 args[i] = args[i].replace('"', '')
         return args
@@ -97,7 +92,7 @@ class Interpreter:
         return self.interpret_expression(fdef[0], line)
 
     def inject_argument(self, exp, param, arg, line, no_param=False):
-        print("  Injecting argument '" + str(arg) + "' into " + param)
+        #print("  Injecting argument '" + str(arg) + "' into " + param)
         for i in range(len(exp.children)):
             node = exp.children[i]
             if len(node.children) > 0:
@@ -225,7 +220,7 @@ class Interpreter:
             self.interpret_nodes(nodes[3:], line)
 
     def interpret_nodes(self, nodes, line):
-        print("Interpreting line " + line)
+        #print("Interpreting line " + line)
         nt = nodes[0].node_type
         if nt == "FUNC-DEC":
             return self.declare_function(nodes, line)
@@ -252,6 +247,14 @@ class Interpreter:
         for subtree in parse_tree.children:
             self.lines[int(subtree.line)] = subtree
 
+    def debug(self, parse_tree):
+        self.interpret(parse_tree)
+        return {
+          "out_buffer": self.out_buffer, "identifiers":   self.identifiers,
+          "max_line":   self.max_line  , "lines":         self.lines,
+          "is_running": self.is_running, "print_newline": self.print_newline
+        }
+
     def interpret(self, parse_tree):
         #print(parse_tree)
         self.load_code(parse_tree)
@@ -263,7 +266,6 @@ class Interpreter:
                     line = subtree.line
                     nodes = subtree.children
                     self.interpret_nodes(nodes, line)
-            #return self.out_buffer
-            return {"identifiers": self.identifiers, "out_buffer": self.out_buffer}
+            return self.out_buffer
         except RecursionError:
             print("Interpreter failed. Max recursion depth exceeded ; line " + line)
