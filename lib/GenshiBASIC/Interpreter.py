@@ -1,4 +1,5 @@
 import math, random, copy
+from Stack import Stack
 import Constants as constants
 
 class Interpreter:
@@ -6,10 +7,11 @@ class Interpreter:
     def __init__(self):
         self.out_buffer = []
         self.identifiers = {}
-        self.max_line = -1
+        self.max_line = None
         self.lines = {}
         self.is_running = True
         self.print_newline = False
+        self.subroutine_stack = Stack()
 
     def interpret_var_dec(self, nodes, line):
         ident = nodes[0].content
@@ -133,7 +135,12 @@ class Interpreter:
         elif func == "SQR":    return math.sqrt(args[0])
         elif func == "STR$":   return str(args[0])
         elif func == "TAN":    return math.tan(args[0])
-        else : raise Exception("Invalid function '" + func + "' ; line " + line)
+        elif func == "RETURN": 
+            if self.subroutine_stack.is_empty(): 
+                raise Exception("No subroutines to return from ; line " + str(line))
+            after_subr = int(self.subroutine_stack.pop())
+            return self.go_handler(self.lines[after_subr].children, after_subr, True)
+        else : raise Exception("Invalid function '" + func + "' ; line " + str(line))
         return None
 
     def print_to_buffer(self, nodes, line):
@@ -158,15 +165,30 @@ class Interpreter:
             if ln > line_num:
                 return ln
 
-    def go_handler(self, nodes, line):
-        if nodes[0].content == "GOTO":
+    def go_handler(self, nodes, line, to_next=False):
+        if nodes[0].content == "GOSUB":
+            self.subroutine_stack.push(int(nodes[1].line))
+        if to_next and not (line+1) in self.lines.keys():
+            line_num = line + 1
+        else:    
             line_num = self.interpret_expression(nodes[1], line)
-            if line_num > self.max_line or line_num not in self.lines.keys():
-                line_num = self.find_closest_line(line_num)
-            self.interpret_nodes(self.lines[int(line_num)].children, line)
-        else:
-            raise Exception("TODO")
-            
+        if line_num > self.max_line:
+            self.is_running = False
+            return None
+        elif not line_num in self.lines.keys():
+            line_num = self.find_closest_line(line_num)
+        
+        self.interpret_nodes(self.lines[int(line_num)].children, line_num)
+        if not self.subroutine_stack.is_empty():
+            next_line = int(line_num)+1
+            if next_line > self.max_line:
+                self.is_running = False
+                return None
+            elif not next_line in self.lines.keys():
+                next_line = self.find_closest_line(next_line)
+            self.interpret_nodes(self.lines[next_line].children, next_line)
+
+
     def interpret_literal_exp(self, exp, line):
         literal = exp.children[0]
         if literal.node_type == "LITERAL":
@@ -255,9 +277,11 @@ class Interpreter:
         self.identifiers[identifier][indices[0]][indices[1]][indices[2]] = exp
 
     def interpret_nodes(self, nodes, line):
-        #print("Interpreting line " + line)
         nt = nodes[0].node_type
-        if nt == "FUNC-DEC":
+        #print("Interpreting line " + str(line) + "  -> " + nt)
+        if not self.is_running:
+            return None
+        elif nt == "FUNC-DEC":
             return self.declare_function(nodes, line)
         elif nt == "VAR-DEC": 
             return self.interpret_var_dec(nodes[1:], line)
@@ -306,6 +330,9 @@ class Interpreter:
                 if self.is_running:
                     line = subtree.line
                     nodes = subtree.children
+                    while not self.subroutine_stack.is_empty():
+                        subr_line = self.subroutine_stack.pop()
+                        self.interpret_nodes(self.lines[subr_line].children, subr_line)
                     self.interpret_nodes(nodes, line)
             return self.out_buffer
         except RecursionError:

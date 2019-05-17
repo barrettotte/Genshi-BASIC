@@ -115,6 +115,23 @@ class Test_Interpreter(unittest.TestCase):
         ])
         self.genshi_basic.interpret(prog)
 
+    def test_gosub(self):
+      prog = "\n".join([
+        '10 PRINT "HELLO"',
+        '20 GOSUB 500',
+        '100 END',
+        '200 PRINT "!!!"',
+        '500 PRINT "WORLD"',
+        '510 RETURN'
+      ])
+      expected_out = ['HELLOWORLD']
+      debug = self.genshi_basic.debug(prog)["interpreted"]
+      identifiers = debug["identifiers"]
+      self.assertTrue(identifiers == {})
+      out = debug["out_buffer"]
+      self.assertTrue(out == ['HELLOWORLD'])
+
+
     
         
 
