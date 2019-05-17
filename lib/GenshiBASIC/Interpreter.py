@@ -52,14 +52,18 @@ class Interpreter:
                 args[i] = args[i].replace('"', '')
         return args
 
-    def interpret_func_exp(self, exp, line):
+    def interpret_args(self, exp, line):
         ignore = ["COMMA", "LEFT_PAREN", "RIGHT_PAREN"]
+        return [self.interpret_expression(a, line) for a in exp.children[1].children if not a.node_type in ignore]
+
+    def interpret_func_exp(self, exp, line):
         func = exp.children[0].content
         if not func in self.identifiers.keys():
-            args = [self.interpret_expression(a, line) for a in exp.children[1].children if not a.node_type in ignore]
-            args = self.validate_args(func, args, line)
+            args = self.validate_args(func, self.interpret_args(exp, line), line)
             return self.function_handler(func, args, line)
         args = self.filter_nodes(exp.children[1].children[1:-1], ["COMMA"])
+        if type(self.identifiers[func]) is list:
+            return self.interpret_array_access(func, args, line)
         return self.interpret_udf(func, args, line)
     
     def interpret_group_exp(self, group, line):
@@ -104,7 +108,6 @@ class Interpreter:
                 exp.children[i].content = str(arg)
         return exp
         
-
     def function_handler(self, func, args, line):
         if   func == "ABS":    return abs(args[0])
         elif func == "ASC":    return ord(args[0][0])
@@ -219,6 +222,38 @@ class Interpreter:
         if self.interpret_expression(nodes[1], line) == 1:
             self.interpret_nodes(nodes[3:], line)
 
+    def interpret_array_dec(self, nodes, line):
+        ignore = ["COMMA", "LEFT_PAREN", "RIGHT_PAREN"]
+        arr_def = nodes[1].children
+        ident = arr_def[0].content
+        indices = args = [self.interpret_expression(a, line) for a in arr_def[1].children if not a.node_type in ignore]
+        if ident in self.identifiers.keys():
+            raise Exception("Identifier '" + ident + "' has already been declared ; line " + line)
+        elif len(indices) > 3: 
+            raise Exception("Arrays have a maximum dimension of three ; line " + line)
+        elif len(indices) == 0:
+            raise Exception("Arrays must have a minimum dimension of one ; line " + line)
+        cols = indices[0]
+        rows = indices[1] if len(indices) > 1 else 1
+        sheets = indices[2] if len(indices) == 3 else 1
+        arr = [[[None for k in range(sheets)] for j in range(rows)] for i in range(cols)]
+        self.identifiers[ident] = arr
+
+    def interpret_array_access(self, identifier, args, line):
+        indices = [0,0,0]
+        for index in range(len(args)):
+            indices[index] = self.interpret_expression(args[index], line)
+        return self.identifiers[identifier][indices[0]][indices[1]][indices[2]]
+
+    def interpret_array_assign(self, nodes, line):
+        identifier = nodes[0].children[0].content
+        exp = self.interpret_expression(nodes[2], line)
+        indices = [0,0,0]
+        args = self.interpret_args(nodes[0], line)
+        for index in range(len(args)):
+            indices[index] = args[index]
+        self.identifiers[identifier][indices[0]][indices[1]][indices[2]] = exp
+
     def interpret_nodes(self, nodes, line):
         #print("Interpreting line " + line)
         nt = nodes[0].node_type
@@ -235,12 +270,18 @@ class Interpreter:
         elif nt == "GO-DEF":
             return self.go_handler(nodes, line)
         elif nt == "FUNCTION_EXP":
-            return self.interpret_func_exp(nodes[0], line)
+            func = nodes[0].children[0].content
+            if func in self.identifiers.keys() and type(self.identifiers[func]) is list:
+                return self.interpret_array_assign(nodes, line)
+            else:
+                return self.interpret_func_exp(nodes[0], line)
         elif nt in ["BINARY_EXP", "GROUPING_EXP", "UNARY_EXP"]:
             return self.interpret_expression(nodes[0], line)
         elif nt == "IF-DEF":
             return self.interpret_if(nodes, line)
-        raise Exception("Should never get here !!!")
+        elif nt == "ARR-DEC":
+            return self.interpret_array_dec(nodes, line)
+        raise Exception("Should never get here! Unhandled node type " + nt)
 
     def load_code(self, parse_tree):
         self.max_line = int(parse_tree.children[-1].line)

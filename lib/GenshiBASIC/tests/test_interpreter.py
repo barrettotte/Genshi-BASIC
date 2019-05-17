@@ -90,7 +90,7 @@ class Test_Interpreter(unittest.TestCase):
         debug = self.genshi_basic.debug(prog)["interpreted"]
         identifiers = debug["identifiers"]
         out = debug["out_buffer"]
-        
+
         for ident, val in expected_identifiers.items():
             self.assertTrue(expected_identifiers[ident] == identifiers[ident])
         for func, val in expected_funcs.items():
@@ -98,7 +98,22 @@ class Test_Interpreter(unittest.TestCase):
             self.assertTrue(len(identifiers[func]['def']) == val[1])
         for i in range(len(expected_out)):
             self.assertTrue(expected_out[i] == out[i])
-        
+    
+    def test_array(self):
+        prog = "\n".join([
+          '10 DIM A(7)',
+          '15 A(1) = 123',
+          '20 DIM B(4,2,1)',
+          '40 B(0,0,0) = 5',
+          '41 B(1,0,0) = 1',
+          '42 B(1,1,0) = 2',
+          '43 B(0,1,0) = 3',
+          '60 LET X = 5+B(0,0,0)',
+          '65 LET Y = B(0,11-X,0)',
+          '70 LET Z = B(0,0,0) + A(1)',
+          '1000 END'
+        ])
+        self.genshi_basic.interpret(prog)
 
     
         

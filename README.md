@@ -74,7 +74,7 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | CLR       | Deletes variables, arrays, defs, etc.      | ```CLR```                                    |
 | COS       | Cosine of numeric angle (radians)          | ```COS(0)``` -> 1                            |
 | DEF       | Defines a function                         | ```DEF FN FTEST(X) = X*3```                  |
-| DIM       | Allocate memory for an array               | ```DIM A$(2,3)```                            |
+| DIM       | Declare an array up to three dimensions    | ```DIM A(2,3,2)```                           |
 | END       | End program execution                      | ```END```                                    |
 | ENDFOR    | Close scope of for loop                    | ```FOR X=1 TO 3: PRINT X: ENDFOR``` -> 1...3 |
 | EQ        | Equal to relational operator               | ```IF I EQ I```                              |
