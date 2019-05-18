@@ -16,7 +16,7 @@ class Interpreter:
     def interpret_var_dec(self, nodes, line):
         ident = nodes[0].content
         if ident in self.identifiers.keys():
-            raise Exception("Identifier '" + ident + "' has already been declared ; line " + line)
+            raise Exception("Identifier '" + ident + "' has already been declared ; line " + str(line))
         self.identifiers[ident] = self.interpret_expression(nodes[2], line)
 
     def interpret_var_assign(self, nodes, line):
@@ -243,6 +243,7 @@ class Interpreter:
     def interpret_if(self, nodes, line):
         if self.interpret_expression(nodes[1], line) == 1:
             self.interpret_nodes(nodes[3:], line)
+        #else: print(self.interpret_expression(nodes[1], line))
 
     def interpret_array_dec(self, nodes, line):
         ignore = ["COMMA", "LEFT_PAREN", "RIGHT_PAREN"]
@@ -276,6 +277,29 @@ class Interpreter:
             indices[index] = args[index]
         self.identifiers[identifier][indices[0]][indices[1]][indices[2]] = exp
 
+    def interpret_for(self, nodes, line):
+        self.interpret_var_dec(nodes[1:], line)
+        iter_id = nodes[1].content
+        start = self.identifiers[iter_id]
+        end = self.interpret_expression(nodes[5], line)
+        step = self.interpret_expression(nodes[7], line)
+        next_line = int(line)+1
+        next_node = None
+
+        while(self.identifiers[iter_id] < end):
+            #print("For loop iteration " + str(self.identifiers[iter_id]))
+            next_line = self.find_closest_line(int(next_line))
+            next_node = self.lines[next_line].children[0]
+            if self.identifiers[iter_id] <= end:
+                if next_node.node_type == "FOR-END":
+                    self.identifiers[iter_id] += step
+                    next_line = line
+                elif not self.lines[next_line].children[0].node_type == "FOR-END":
+                    self.interpret_nodes(self.lines[next_line].children, next_line)
+                    next_line += 1
+            else:
+                raise Exception("For loop end not interpreted correctly ; line " + line)
+
     def interpret_nodes(self, nodes, line):
         nt = nodes[0].node_type
         #print("Interpreting line " + str(line) + "  -> " + nt)
@@ -305,6 +329,10 @@ class Interpreter:
             return self.interpret_if(nodes, line)
         elif nt == "ARR-DEC":
             return self.interpret_array_dec(nodes, line)
+        elif nt == "FOR-DEF":
+            return self.interpret_for(nodes, line)
+        elif nt == "FOR-END":
+            return None
         raise Exception("Should never get here! Unhandled node type " + nt)
 
     def load_code(self, parse_tree):

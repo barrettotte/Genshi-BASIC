@@ -131,8 +131,20 @@ class Test_Interpreter(unittest.TestCase):
       out = debug["out_buffer"]
       self.assertTrue(out == ['HELLOWORLD'])
 
-
-    
+    def test_for(self):
+      prog = "\n".join([
+        '10  REM THE CLASSIC FIZZBUZZ',
+        '20  FOR I=1 TO 100 STEP 1',
+        '30    IF (I % 15) EQ 0 THEN PRINTL CAT$(I, " - FIZZBUZZ")',
+        '40    IF (I % 3)  EQ 0 THEN PRINTL CAT$(I, " - FIZZ")',
+        '50    IF (I % 5)  EQ 0 THEN PRINTL CAT$(I, " - BUZZ")',
+        '60  ENDFOR',
+        '70  END'  
+      ])
+      debug = self.genshi_basic.debug(prog)["interpreted"]
+      out = debug["out_buffer"]
+      self.assertTrue(len(out) == 59) # You're crazy if you think I'm going to check every entry
+      self.assertTrue(debug["identifiers"]["I"] == 100)
         
 
 if __name__ == "__main__": unittest.main()
