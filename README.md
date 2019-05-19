@@ -1,11 +1,11 @@
 # GenshiBASIC-Interpreter
 
+
 [![pipeline status](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/badges/master/pipeline.svg)](https://gitlab.com/barrettotte/GenshiBASIC-Interpreter/commits/master)
 ![GitHub](https://img.shields.io/github/license/barrettotte/GenshiBASIC-Interpreter.svg)
 
-An interpreter for 原始 (Genshi) BASIC; A BASIC dialect based on Commodore 64 BASICv2.
 
-This is my first attempt at writing an interpreter and a python package.
+An interpreter for 原始 (Genshi) BASIC; A BASIC dialect based on Commodore 64 BASICv2.
 
 Even though writing an interpreter for a custom BASIC dialect is pretty useless, the same 
 lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.
@@ -16,14 +16,56 @@ Genshi BASIC has 50 keywords and 7 symbolic operators. The grammar rules were ta
 and changed to fit the scope of this project with my limited knowledge of parsing/interpreting.
 
 Essentially, I stripped out all of the memory manipulation and I/O (except PRINT). Otherwise, 
-I would be better off making a Commodore 64 VM instead of an interpreter to add all the proper functionality.
+I would have been better off making a Commodore 64 VM instead of an interpreter to add all the proper system functionality.
 
 
-## Install
-```TBD```
+## Yeah...I Didn't Finish it
+This was for educational purposes, so I have not extensively gone through every single scenario for testing.
+I work on a lot of side projects, so I try not to stay in one place for too long. I plan out the project requirements, 
+get them to a functional state with some test coverage, and move on to the next "shiny" side project idea that pops into my head.
+
+It saddens me to say that this is not completely finished. I ran into a lot of problems towards the end and I just
+want to look at something else now. I'm honestly surprised I even made it as far as I did.
+In the future, I will definitely be using a library like Antlr to make a more stable
+language. I learned a lot from this project, but I think its time to let this one sit on the shelf.
 
 
-## GenshiBASIC Package Examples
+## Sample
+```python
+from GenshiBASIC import GenshiBASIC
+genshi_basic = GenshiBASIC.New()
+
+# Program can be loaded as file too
+prog = "\n".join([
+  '1     REM THE CLASSIC FIZZBUZZ PROGRAM IN GENSHI BASIC',
+  '10    DEF FN FIZZPR(IDX, S$) = PRINTL CAT$(IDX, S$)',
+  '20    FOR I=1 TO 100 STEP 1',
+  '30      IF (I % 15) EQ 0 THEN FIZZPR(I, " FIZZBUZZ")',
+  '40      IF (I % 3)  EQ 0 THEN FIZZPR(I, " FIZZ")',
+  '50      IF (I % 5)  EQ 0 THEN FIZZPR(I, " BUZZ")',
+  '60    ENDFOR',
+  '1000  END',
+])
+genshi_basic.interpret(prog)
+
+# ----- Console Output ----- #
+3 FIZZ
+5 BUZZ
+.
+.
+.
+90 FIZZBUZZ
+93 FIZZ
+95 BUZZ
+96 FIZZ
+99 FIZZ
+100 BUZZ
+# -------------------------- #
+```
+
+
+
+## GenshiBASIC Usage
 ```python
 from GenshiBASIC import GenshiBASIC
 genshi_basic = GenshiBASIC.New()
@@ -35,9 +77,11 @@ genshi_basic = GenshiBASIC.New()
 
 with open('./programs/test.bas', 'r') as f:
     genshi_basic.interpret(f)
+
 genshi_basic.interpret('./programs/test.bas', is_file_path=True)
 genshi_basic.interpret('10 PRINT "HELLO GENSHI BASIC"')
 genshi_basic.interpret('10 PRINT "HELLO GENSHI BASIC"', debug=True) # Returns dictionary of debug info
+
 
 # --- Warnings / Exceptions ---
 genshi_basic.interpret('../somewhere/missing.bas', is_file_path=True) # Throws FileNotFound exception
@@ -115,7 +159,7 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | THEN      | Second half of if statement                | ```IF $A="" THEN PRINT "EMPTY"```            |
 | TO        | Range keyword in for loop                  | ```FOR X=1 TO 3: PRINT "HELLO"```            |
 | XOR       | Boolean Exclusive OR                       | ```IF $A="" XOR $B="" THEN ...```            |
-| Operators | arithmetic: ```+, -, *, \, ^, %```, assignment: ```=``` |                                    | 
+| Operators | arithmetic: ```+, -, *, \, ^, %```, assignment: ```=``` |                                 | 
 
 
 ## Notable differences vs Commodore 64 BASICv2
@@ -134,17 +178,38 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 * Max program length is 64KB (65,536 bytes) lines
 * To handle string literal concatentation easily, I added ```CAT$```. String variables can still be concatenated normally ```X$=Y$+Z$```. This was added to finish the parser faster.
 * Currently there are no print format specifiers, I added ```PRINTL``` to provide a simple print line function
+* If statements are 'truthy', if the expression evaluates to 1 -> true, 0 -> false
+  * EX: ```IF 10-9 THEN PRINT "HELLO"```
 
 
-## Possible future goals
+## Possible future goals (unlikely)
 * Look into adding **DATA**, **READ**, **INPUT** commands ... might be doable?
 * Token column number tracking (begin, end) for better error messages
 * Better error specification (column number + expression)
 * Print format specifiers ```',', ';', ':'```
+* Fix expression tree building
+* Error logging
 
 
 ## Running in Docker
 * ```docker build --tag=genshibasic .```
+
+
+## Problems
+
+### Expressions
+So, due to lack of knowledge. My expression trees are not being built correctly. 
+This has to do with the way I was using a stack to build my tree. Expressions are parsed right to left.
+So, on line 10 below, ```5 EQ 0``` is evaluated first, then ```10 % 0```; throwing an exception
+
+This was a really disappointing find and I think it would mean spending longer on this side project
+to rewrite my parser. That is what I should do, but I'm not going to yet. It can be worked around by 
+reordering the expression or using parenthesis.
+```python
+'5  IF 0 EQ 10 % 5 THEN PRINTL "A"',   # Prints "A"
+'10 IF 10 % 5 EQ 0 THEN PRINTL "B"',   # Divide by zero error 
+'15 IF (10 % 5) EQ 0 THEN PRINTL "C"', # Prints "B"
+```
 
 
 ## References
@@ -157,3 +222,4 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 * Introduction to Lexical Analysis https://hackernoon.com/lexical-analysis-861b8bfe4cb0
 * Making a Python Package https://uoftcoders.github.io/studyGroup/lessons/python/packages/lesson/
 * Web BASIC interpreter https://yohan.es/swbasic/
+

@@ -227,6 +227,8 @@ class Parser:
     def parse_statement(self, node_stack, line):
         grammar_rules = constants.GRAMMAR_RULES
         statement = Node("LINE", line=line)
+        if not node_stack.peek().node_type in grammar_rules:
+            raise SyntaxError("Unexpected token '" + node_stack.peek().content + "' on line " + line)
         rule = grammar_rules[node_stack.peek().node_type]
         statement.add_child(node_stack.pop())
         if isinstance(rule, dict):

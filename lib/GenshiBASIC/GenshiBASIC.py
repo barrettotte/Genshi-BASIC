@@ -37,9 +37,6 @@ class New:
     def load_src(self, src, is_file_path=False):
         self.check_src_params(src, is_file_path)
         src = utils.read_file(src, throw_error=True) if is_file_path else src
-        if len(src) == 0:
-            warnings.raise_empty_file()
-            sys.exit()
         if type(src) is io.TextIOWrapper:
             ext_split = src.name.split(".")
             if ext_split[len(ext_split)-1] != "bas": 
@@ -66,7 +63,8 @@ class New:
         return self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path)))
 
     def interpret(self, src, is_file_path=False):
-        return self.interpreter.interpret(self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path))))
+        out = self.interpreter.interpret(self.parser.parse(self.lexer.lex(self.load_src(src, is_file_path))))
+        print("\n".join(out))
 
     def debug(self, src, is_file_path=False):
         info = {"src_original": src}

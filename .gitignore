@@ -4,5 +4,4 @@ log.txt
 # VS Code
 /.vscode/settings.json
 /.vscode/launch.json
-_workspace.py
 *.pyc

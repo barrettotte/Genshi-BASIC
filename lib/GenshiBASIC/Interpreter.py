@@ -22,7 +22,7 @@ class Interpreter:
     def interpret_var_assign(self, nodes, line):
         ident = nodes[0].content
         if not ident in self.identifiers.keys():
-            raise Exception("Identifier '" + ident + "' referenced before declaration ; line " + line)
+            raise Exception("Identifier '" + ident + "' referenced before declaration ; line " + str(line))
         self.identifiers[ident] = self.interpret_expression(nodes[2], line) 
 
     def interpret_expression(self, exp, line):
@@ -82,32 +82,25 @@ class Interpreter:
     def interpret_udf(self, func, args, line):
         params, fdef = self.identifiers[func]['params'], copy.deepcopy(self.identifiers[func]['def'])
         if len(args) != len(params): raise Exception(
-          "Expected '" + str(len(params)) + "' param(s), but encountered '" + str(len(args)) + "' ; line " + line
+          "Expected '" + str(len(params)) + "' param(s), but encountered '" + str(len(args)) + "' ; line " + str(line)
         )
         for i in range(len(args)):
             args[i] = self.interpret_expression(args[i], line)
-        no_param = fdef[0].node_type in ["PRINT", "GO-DEF"]
-
-        for n in range(int(no_param), len(fdef)):
+        for n in range(0, len(fdef)):
             for j in range(len(params)):
-                fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line, no_param)
-
+                fdef[n] = self.inject_argument(fdef[n], params[j], args[j], line) 
         if fdef[0].node_type == "GO-DEF":  return self.go_handler(fdef, line)
         elif fdef[0].node_type == "PRINT": return self.print_to_buffer(fdef, line)
-        
         return self.interpret_expression(fdef[0], line)
 
-    def inject_argument(self, exp, param, arg, line, no_param=False):
+    def inject_argument(self, exp, param, arg, line):
         #print("  Injecting argument '" + str(arg) + "' into " + param)
         for i in range(len(exp.children)):
-            node = exp.children[i]
-            if len(node.children) > 0:
-                if node.children[0].content == param:
-                    exp.children[i].children[0].node_type = "LITERAL"
-                    exp.children[i].children[0].content = str(arg)
-            elif no_param:
+            if exp.children[i].content == param:
                 exp.children[i].node_type = "LITERAL"
                 exp.children[i].content = str(arg)
+            if len(exp.children[i].children) > 0:
+                exp.children[i] = self.inject_argument(exp.children[i], param, arg, line)
         return exp
         
     def function_handler(self, func, args, line):
@@ -158,14 +151,15 @@ class Interpreter:
             self.out_buffer[-1] += s
         self.print_newline = nodes[0].content == "PRINTL"
 
-    def find_closest_line(self, line_num):
+    def find_closest_line(self, line_num, forward=True):
         if line_num > self.max_line:
             return self.max_line
         for ln in self.lines.keys():
-            if ln > line_num:
+            if forward and ln > line_num:
                 return ln
 
     def go_handler(self, nodes, line, to_next=False):
+        #print("Going to line " + str(line))
         if nodes[0].content == "GOSUB":
             self.subroutine_stack.push(int(nodes[1].line))
         if to_next and not (line+1) in self.lines.keys():
@@ -188,7 +182,6 @@ class Interpreter:
                 next_line = self.find_closest_line(next_line)
             self.interpret_nodes(self.lines[next_line].children, next_line)
 
-
     def interpret_literal_exp(self, exp, line):
         literal = exp.children[0]
         if literal.node_type == "LITERAL":
@@ -205,6 +198,9 @@ class Interpreter:
         left = self.interpret_expression(exp.children[0], line)
         op = exp.children[1].content
         right = self.interpret_expression(exp.children[2], line)
+        #print(str(left) + " " + str(op) + " " + str(right))
+        if op in ["/", "%"] and right == 0:
+            raise Exception("Cannot divide/modulo by zero ; line " + line)
         if type(left) is str or type(right) is str: 
             raise Exception("Invalid operation. Cannot use '" + op + "' with strings ; line " + line)
         if   op == "+":   return left +  right
@@ -236,7 +232,7 @@ class Interpreter:
         if ident in self.identifiers.keys():
             raise Exception("Identifier '" + ident + "' has already been declared ; line " + line)
         self.identifiers[ident] = { 
-            "params": [p.content for p in nodes[4].children if p.content.isidentifier()],
+            "params": [p.content for p in nodes[4].children if p.content.replace("$","").isidentifier()],
             "def": nodes[7:]
         }
 
@@ -278,7 +274,10 @@ class Interpreter:
         self.identifiers[identifier][indices[0]][indices[1]][indices[2]] = exp
 
     def interpret_for(self, nodes, line):
-        self.interpret_var_dec(nodes[1:], line)
+        if not nodes[1].content in self.identifiers.keys():
+            self.interpret_var_dec(nodes[1:], line)
+        else:
+            self.interpret_var_assign(nodes[1:], line)
         iter_id = nodes[1].content
         start = self.identifiers[iter_id]
         end = self.interpret_expression(nodes[5], line)
@@ -286,7 +285,7 @@ class Interpreter:
         next_line = int(line)+1
         next_node = None
 
-        while(self.identifiers[iter_id] < end):
+        while self.identifiers[iter_id] < end and self.is_running:
             #print("For loop iteration " + str(self.identifiers[iter_id]))
             next_line = self.find_closest_line(int(next_line))
             next_node = self.lines[next_line].children[0]
