@@ -19,17 +19,6 @@ Essentially, I stripped out all of the memory manipulation and I/O (except PRINT
 I would have been better off making a Commodore 64 VM instead of an interpreter to add all the proper system functionality.
 
 
-## Yeah...I Didn't Finish it
-This was for educational purposes, so I have not extensively gone through every single scenario for testing.
-I work on a lot of side projects, so I try not to stay in one place for too long. I plan out the project requirements, 
-get them to a functional state with some test coverage, and move on to the next "shiny" side project idea that pops into my head.
-
-It saddens me to say that this is not completely finished. I ran into a lot of problems towards the end and I just
-want to look at something else now. I'm honestly surprised I even made it as far as I did.
-In the future, I will definitely be using a library like Antlr to make a more stable
-language. I learned a lot from this project, but I think its time to let this one sit on the shelf.
-
-
 ## Sample
 ```python
 from GenshiBASIC import GenshiBASIC
@@ -65,7 +54,19 @@ genshi_basic.interpret(prog)
 
 
 
-## GenshiBASIC Usage
+## Yeah...I Didn't Finish it
+This was for educational purposes, so I have not extensively gone through every single scenario for testing.
+I work on a lot of side projects, so I try not to stay in one place for too long. I plan out the project requirements, 
+get them to a functional state with some test coverage, and move on to the next "shiny" side project idea that pops into my head.
+
+It saddens me to say that this is not completely finished. I ran into a lot of problems towards the end and I just
+want to look at something else now. I'm honestly surprised I even made it as far as I did.
+In the future, I will definitely be using a library like Antlr to make a more stable
+language. I learned a lot from this project, but I think its time to let this one sit on the shelf.
+
+
+
+## Other Examples
 ```python
 from GenshiBASIC import GenshiBASIC
 genshi_basic = GenshiBASIC.New()
@@ -110,7 +111,7 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | Keyword   | Description                                | Syntax                                       |
 | --------- | ------------------------------------------ | -------------------------------------------- |
 | ABS       | Absolute value of numeric                  | ```ABS(-10)``` -> 10                         |
-| AND       | Boolean AND                                | ```3>2 AND 5<6``` -> -1 (true)               |
+| AND       | Boolean AND                                | ```3 GT 2 AND 5 LT 6``` -> -1 (true)         |
 | ASC       | ASCII value of first character             | ```ASC("ABC")``` -> 65                       |
 | BIN$      | Return binary string of numeric            | ```BIN$(1)```                                |
 | CAT$      | Concatenate two expressions as a string    | ```PRINT CAT$("HELLO", X+1)```-> "HELLOX+1"  |
@@ -130,7 +131,7 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | GOTO      | Jump to line number                        | ```GOTO 500```                               |
 | GT        | > relational operator                      | ```IF I GT 0```                              |
 | HEX$      | Return hex string of numeric               | ```HEX$(15)```                               |
-| IF        | Start if statement                         | ```IF A$="" THEN PRINT "EMPTY"``` -> "EMPTY" |
+| IF        | Start if statement                         | ```IF A$ EQ "" THEN PRINT "EMPTY"``` -> "EMPTY" |
 | INT       | Round a numeric                            | ```INT(1.53)``` -> 1                         |
 | LE        | <= relational operator                     | ```IF I LE 0```                              |
 | LEFT$     | Substring from left to numeric (0-255)     | ```A$="ABCDEF":LEFT$(A$, 3)``` -> "ABC"      |
@@ -140,8 +141,8 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | LOG       | Natural logarithm of numeric               | ```LOG(10)``` -> 2.30258509                  |
 | MID$      | Substring from numeric to numeric (0-255)  | ```MID$(A$, 1, 3)```                         |
 | NE        | != relational operator                     | ```IF I NE 4```                              |
-| NOT       | Boolean NOT                                | ```IF NOT A=1 AND B$<>"TEST" THEN ```        |
-| OR        | Boolean OR                                 | ```4<2 OR 1>9``` -> 0 (false)                |
+| NOT       | Boolean NOT                                | ```IF NOT A EQ 1 AND B$ NE "TEST" THEN ```   |
+| OR        | Boolean OR                                 | ```4 LT 2 OR 1 GT 9``` -> 0 (false)          |
 | PI        | Return numeric PI * X                      | ```X=PI(2)```                                |
 | PRINT     | Print to screen                            | ```PRINT "HELLO"``` -> "HELLO"               |
 | PRINTL    | Print line to screen                       | ```PRINTL "HELLO"``` -> "HELLO\n"            |
@@ -151,14 +152,14 @@ genshi_basic.interpret('PRINT "HELLO WORLD"\nA=123') # Converted to '1 PRINT "HE
 | RND       | Random float from 0.0 to 1.0               | ```INT(RND(1)*100)``` -> 65                  |
 | SGN       | Return sign of numeric -1,0,1              | ```SGN(-11)``` -> -1                         |
 | SIN       | Sine of numeric angle (radians)            | ```SIN(1)``` -> 0.8141470985                 |
-| SPC$      | Return x spaces as string literal          | ```PRINT GLUE$("HELLO", SPC$(10))```         |
+| SPC$      | Return x spaces as string literal          | ```PRINT CAT$("HELLO", SPC$(10))```          |
 | SQR       | Square root of numeric                     | ```SQR(4)``` -> 2                            |
 | STEP      | Used as iteration amount in for loop       | ```FOR X=1 TO 3 STEP 0.5```                  |
 | STR$      | Convert numeric to string                  | ```STR$(1E11)``` -> "1E+11"                  |
 | TAN       | Tangent of numeric angle (radians)         | ```TAN(1)``` -> 1.55740772                   |
-| THEN      | Second half of if statement                | ```IF $A="" THEN PRINT "EMPTY"```            |
+| THEN      | Second half of if statement                | ```IF $A EQ "" THEN PRINT "EMPTY"```         |
 | TO        | Range keyword in for loop                  | ```FOR X=1 TO 3: PRINT "HELLO"```            |
-| XOR       | Boolean Exclusive OR                       | ```IF $A="" XOR $B="" THEN ...```            |
+| XOR       | Boolean Exclusive OR                       | ```IF $A EQ "" XOR $B EQ "" THEN ...```      |
 | Operators | arithmetic: ```+, -, *, \, ^, %```, assignment: ```=``` |                                 | 
 
 
