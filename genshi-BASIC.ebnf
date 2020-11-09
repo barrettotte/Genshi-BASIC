@@ -1,0 +1,98 @@
+(* Genshi BASIC grammar rules *)
+
+program     = {statement}
+            ;
+
+statement   = declaration | forstmt | funcstmt | gostmt | ifstmt | printstmt
+            ;
+
+expression  = literal | unary | binary | grouping
+            ;
+
+grouping    = '(', expression, ')'
+            ;
+
+unary       = ('-' | 'NOT' ), expression
+            ;
+
+binary      = expression, operator, expression
+            ;
+
+operator    = '=' | '-' | '+' | '/' | '*' | '^' | '>' | '<' | '<>'
+            | '<=' | '=>' | '>=' | '=>' | 'XOR' | 'OR' | 'AND' | 'MOD' 
+            ;
+
+bif         = 'ABS' | 'ASC' | 'ATN' | 'CHR$' | 'CLR' | 'COS' | 'END' | 'EXP'
+            | 'INT' | 'LEFT$' | 'LEN' | 'LOG' | 'MID$' | 'RIGHT$' | 'RND' | 'RETURN'
+            | 'SGN' | 'SIN' | 'SPC' | 'SQR' | 'STR$' | 'TAB' | 'TAN'
+            ;
+
+parameters  = identifier, {',', identifier}
+            ;
+
+arguments   = expression, {',' expression}
+            ;
+
+declaration = funcdec | vardec | arrdec
+            ;
+
+arrdec      = 'DIM', identifier, '(', arguments, ')'
+            ;
+
+funcdec     = 'DEF', 'FN', identifier, '(', [parameters], ')', '=', expression
+            ;
+
+vardec      = 'LET', identifier, '=', expression
+            ;
+
+forstmt     = 'FOR', identifier, '=', expression, 'TO', expression, 'STEP', expression
+            ;
+
+funcstmt    = (identifier | bif), ['(', [arguments], ')']
+            ;
+
+gostmt      = ('GOTO' | 'GOSUB'), expression
+            ;
+
+ifstmt      = 'IF', expression, 'THEN', statement
+            ;
+
+printstmt   = 'PRINT', statement
+            ;
+
+identifier  = letter, {letter | digit | "_"} 
+            ;
+
+literal     = int_literal
+            ;
+
+int_literal = digit, {digit} 
+            ;
+
+character   = digit | letter | symbol 
+            ;
+
+letter      = uppercase | lowercase 
+            ;
+
+digit       = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" 
+            ;
+
+whitespace  = ? whitespace characters ? 
+            ;
+
+symbol      = " " | "'" | '"' | "!" | "@" | "#" | "$" | "%" | "^" | "&"
+            | "*" | "(" | ")" | "_" | "-" | "+" | "=" | ";" | ":" | ","
+            | "." | "<" | ">" | "/" | "?" | "[" | "{" | "]" | "}" | "|"
+            | "\" | "~" | "`" 
+            ;
+
+uppercase   = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" | "J"
+            | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" | "S" | "T"
+            | "U" | "V" | "W" | "X" | "Y" | "Z" 
+            ;
+
+lowercase   = "a" | "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" 
+            | "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" | "t" 
+            | "u" | "v" | "w" | "x" | "y" | "z" 
+            ;

@@ -1,7 +1,4 @@
 __pycache__
-log.txt
-
-# VS Code
-/.vscode/settings.json
-/.vscode/launch.json
+/.vscode
 *.pyc
+log.txt
