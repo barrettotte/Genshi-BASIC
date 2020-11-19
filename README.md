@@ -21,16 +21,20 @@ TODO:
 
 ## Usage
 ```python
+# usage.py
+
 TODO:
 ```
 
 
 ## Genshi BASIC Examples
-TODO:
+TODO: printing, comments, variables, arithmetic, arrays, loops, if, subroutines
+```
+```
 
 
 ## Language Overview
-TODO:
+TODO: keywords, operators
 
 
 ## Problems
@@ -43,7 +47,7 @@ TODO:
 
 
 ## References
-- Commodore 64 BASIC 
+- Commodore 64 BASIC
   - https://www.c64-wiki.com/wiki/BASIC
   - https://www.c64-wiki.com/wiki/C64-Commands
-- ENBF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+- EBNF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
