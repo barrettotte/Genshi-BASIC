@@ -1,8 +1,9 @@
 # Usage of genshi BASIC interpreter
 
-from genshibasic import genshibasic
+from genshibasic import lexer
 
 def main():
-    genshibasic.main()
+    l = lexer.Lexer()
+    l.lex('hello')
 
 if __name__ == '__main__': main()
