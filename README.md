@@ -14,7 +14,7 @@ Genshi (原始) means simple in romaji.
 
 **Rewritten 11/15/20** to reflect the concepts I've learned since the original implementation.
 
-The original scuffed implementation can be found in [archived/](archived/)
+The original scuffed implementation can be found in [docs/archived/](docs/archived/)
 
 
 ### Notable differences vs Commodore 64 BASIC
@@ -39,8 +39,13 @@ TODO:
 TODO:
 
 
+## Development
+- Install deps - ```pip3 install -r requirements.txt```
+- Run tests - 
+
+
 ## References
-* Commodore 64 BASIC 
-  * https://www.c64-wiki.com/wiki/BASIC
-  * https://www.c64-wiki.com/wiki/C64-Commands
-* ENBF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+- Commodore 64 BASIC 
+  - https://www.c64-wiki.com/wiki/BASIC
+  - https://www.c64-wiki.com/wiki/C64-Commands
+- ENBF https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
