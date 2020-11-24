@@ -1,6 +1,8 @@
 # global definitions for Genshi BASIC
 
-# TODO:
 class TokenType:
+    STRING     = 0
+    UINT       = 1
+    UFLOAT     = 2
+    IDENTIFIER = 3
 
-    WASD = 0

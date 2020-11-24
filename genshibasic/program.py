@@ -1,4 +1,4 @@
-# collection of parsed genshi BASIC statements
+# collection of parsed genshi BASIC statements with line numbers
 
 class Program:
 
