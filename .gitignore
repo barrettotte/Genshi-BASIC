@@ -3,3 +3,11 @@ __pycache__
 *.pyc
 log.txt
 *.wakatime-project
+
+# venv
+pyvenv.cfg
+pip-selfcheck.json
+Include/
+Lib/
+man/
+Scripts/

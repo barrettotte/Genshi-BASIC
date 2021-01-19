@@ -14,85 +14,95 @@ class Lexer:
         tokens = []
         self.__pos = 0
         self.__stmt = stmt
-        c = self.__consume()
+        c = self.__peek_curr()
+        start_pos = self.__pos + 1
 
-        while c:
+        while c is not None:
             while c.isspace():
                 c = self.__consume()
+
+            print(c)
+
             if c == '"':
-                tokens.append(self.__lex_string())
+                tokens.append(self.__lex_string(start_pos))
             elif c.isalpha():
-                tokens.append(self.__lex_word())
+                tokens.append(self.__lex_word(start_pos))
             elif c.isdigit():
-                tokens.append(self.__lex_number())
+                tokens.append(self.__lex_number(start_pos))
             elif c in Genshi.SYMBOLS:
-                tokens.append(self.__lex_symbol())
+                print('SYMBOL!!!!')
+                tokens.append(self.__lex_symbol(start_pos))
             else:
                 raise SyntaxError(f"Unknown token starting with '{c}'")
+
+            start_pos = self.__pos + 1
+            c = self.__peek_curr()
         return tokens
 
     # Lex a string literal
-    def __lex_string(self):
+    def __lex_string(self, start_pos):
         lexeme = ''
         c = self.__consume()
-        while c != '"':
+
+        while c != '"' and c is not None:
             lexeme += c
             c = self.__consume()
-        return Token(self.__pos - 1, Genshi.TT_STRING, lexeme)
+        return Token((start_pos, self.__pos - 1), Genshi.TT_STRING, lexeme)
 
     # Lex a numeric literal
-    def __lex_number(self):
+    def __lex_number(self, start_pos):
         lexeme = ''
+        c = self.__consume()
         is_float = False
-        c = self.__peek_curr()
 
-        while c:
+        while c is not None:
             lexeme += c
             c = self.__consume()
 
             if c == '.' and not is_float:
                 is_float = True
-            elif not c.isdigit():
+            elif c is None or not c.isdigit():
                 break
-        return Token(self.__pos, Genshi.TT_UFLOAT if is_float else Genshi.TT_UINT, lexeme)
+        return Token((start_pos, self.__pos - 1), Genshi.TT_UFLOAT if is_float else Genshi.TT_UINT, lexeme)
 
     # Lex identifier or keyword
-    def __lex_word(self):
+    def __lex_word(self, start_pos):
         lexeme = ''
-        c = self.__peek_curr()
+        c = self.__consume()
 
-        while c:
+        while c is not None:
             lexeme += c
             c = self.__consume()
-            if not (c.isalnum() or c in ['_', '$']):
+
+            if c is None or not (c.isalnum() or c in ['_', '$']):
                 break # exit if not valid identifier 
 
         tt = Genshi.KEYWORDS[lexeme] if lexeme in Genshi.KEYWORDS else Genshi.TT_IDENTIFIER
-        return Token(self.__pos, tt, lexeme)
+        return Token((start_pos, self.__pos - 1), tt, lexeme.upper())
 
     # Lex symbol (operator or syntax)
-    def __lex_symbol(self):
+    def __lex_symbol(self, start_pos):
         lexeme = ''
         c1 = self.__consume()
         c2 = self.__peek_next()
 
-        if c2 and ((c1 + c2) in Genshi.SYMBOLS):
+        if c2 is not None and ((c1 + c2) in Genshi.SYMBOLS):
             c2 = self.__consume()
             lexeme = c1 + c2
         else:
             lexeme = c1
-        return Token(self.__pos, Genshi.SYMBOLS[lexeme], lexeme)
+        return Token((start_pos, self.__pos - 1), Genshi.SYMBOLS[lexeme], lexeme)
             
     # Consume the next char in the statement (if anything is left)
     def __consume(self):
-        if self.__pos >= len(self.__stmt):
-            return None
-        c = self.__stmt[self.__pos]
+        c = self.__peek_curr()
         self.__pos += 1
         return c
 
     # Peek the current character
     def __peek_curr(self):
+        if self.__pos >= len(self.__stmt):
+            return None
         return self.__stmt[self.__pos]
     
     # Peek the next character to consume

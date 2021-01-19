@@ -1,7 +1,7 @@
-from .context import genshibasic
+from genshibasic.parser import Parser
 import unittest
 
-class LexerTestSuite(unittest.TestCase):
+class ParserTestSuite(unittest.TestCase):
     
     def test_simple(self):
         assert 1==1
