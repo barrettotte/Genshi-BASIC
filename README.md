@@ -56,9 +56,6 @@ TODO:
 
 
 ## Development
-- venv
-  - ```python3 -m venv .``` - init
-  - ```Scripts/activate``` - enter
 - Install deps - ```pip3 install -r requirements.txt```
 - Run tests - ```python3 -m unittest discover```
 

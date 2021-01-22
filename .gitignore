@@ -7,7 +7,11 @@ log.txt
 # venv
 pyvenv.cfg
 pip-selfcheck.json
+bin/
 Include/
 Lib/
+lib/
+lib64
+share/
 man/
 Scripts/

@@ -58,22 +58,23 @@ class Genshi:
     KW_XOR    = 56  # Boolean XOR
 
     # Symbols (operators or additional syntax)
-    SYM_ADD     = 70
-    SYM_SUB     = 71
-    SYM_MUL     = 72
-    SYM_DIV     = 73
-    SYM_MOD     = 74
-    SYM_LT      = 75
-    SYM_GT      = 76
-    SYM_LE      = 77
-    SYM_GE      = 78
-    SYM_NE      = 79
-    SYM_EQ      = 80
-    SYM_LPAREN  = 81
-    SYM_RPAREN  = 82
-    SYM_COMMA   = 83
-    SYM_COLON   = 84
-    SYM_NEWLINE = 85
+    SYM_ADD       = 70
+    SYM_SUB       = 71
+    SYM_MUL       = 72
+    SYM_DIV       = 73
+    SYM_MOD       = 74
+    SYM_LT        = 75
+    SYM_GT        = 76
+    SYM_LE        = 77
+    SYM_GE        = 78
+    SYM_NE        = 79
+    SYM_EQ        = 80
+    SYM_LPAREN    = 81
+    SYM_RPAREN    = 82
+    SYM_COMMA     = 83
+    SYM_COLON     = 84
+    SYM_SEMICOLON = 85
+    SYM_NEWLINE   = 86
 
     # Keyword lookup table
     KEYWORDS = {
@@ -96,5 +97,6 @@ class Genshi:
         '+': SYM_ADD, '-': SYM_SUB, '*': SYM_MUL, '/': SYM_DIV,
         '%': SYM_MOD, '<': SYM_LT, '>': SYM_GT, '<=': SYM_LE, 
         '>=': SYM_GE, '<>': SYM_NE, '=': SYM_EQ, '(': SYM_LPAREN,
-        ')': SYM_RPAREN, ',': SYM_COMMA, ':': SYM_COLON, '\n': SYM_NEWLINE
+        ')': SYM_RPAREN, ',': SYM_COMMA, ':': SYM_COLON, ';': SYM_SEMICOLON,
+        '\n': SYM_NEWLINE
     }
