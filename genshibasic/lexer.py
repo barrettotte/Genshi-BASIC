@@ -17,24 +17,26 @@ class Lexer:
         c = self.__peek()
 
         while not c is None:
-            # ignore blanks
+            # eat all blanks
             while c.isspace():
                 c = self.__consume()
                 if not c.isspace():
                     self.__rewind()
                     break
-
+            start_pos = self.__pos + 1
+            
             if c == '"':
-                tokens.append(self.__lex_string(self.__pos + 1))
+                t = self.__lex_string(start_pos)
             elif c.isalpha():
-                tokens.append(self.__lex_word(self.__pos + 1))
+                t = self.__lex_word(start_pos)
             elif c.isdigit():
-                tokens.append(self.__lex_number(self.__pos + 1))
+                t = self.__lex_number(start_pos)
             elif c in Genshi.SYMBOLS:
-                tokens.append(self.__lex_symbol(self.__pos + 1))
+                t = self.__lex_symbol(start_pos)
             else:
                 raise SyntaxError(f"Unknown token starting with '{c}'")
 
+            tokens.append(t)
             c = self.__peek()
         return tokens
 
