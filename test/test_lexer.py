@@ -61,6 +61,7 @@ class LexerTestSuite(unittest.TestCase):
             { 'pos': (15,16), 'tok_type': 79, 'lexeme': '<>'  },
             { 'pos': (18,18), 'tok_type': 1,  'lexeme': '5'   },
         ]
+        self.__match(actual, expected)
 
     def __lex(self, src, debug_print=False):
         tokens = Lexer().lex(src)
