@@ -11,4 +11,7 @@ class Token:
         self.lexeme = lexeme      # contents scanned by lexer
 
     def __str__(self):
-        return f"Position=({self.pos[0]}:{self.pos[1]}), Type={self.tok_type}, Lexeme='{self.lexeme}'"
+        s = f"Position=({self.pos[0]}:{self.pos[1]})"
+        s += f", Type={self.tok_type}"
+        s += f", 'Lexeme={self.lexeme}'"
+        return s

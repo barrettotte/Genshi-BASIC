@@ -2,26 +2,27 @@
 
 import sys
 
+
 class Interpreter:
 
     def __init__(self):
-        pass # TODO:
+        pass  # TODO:
 
     # interpret a file from given filepath
     def interpret_from(self, fp):
-        pass # TODO:
+        pass  # TODO:
 
     # interpret from given file
     def interpret_file(self, f):
-        pass # TODO:
+        pass  # TODO:
 
     # interpret from given string
     def interpret_src(self, src):
-        pass # TODO:
+        pass  # TODO:
 
     # run interpreter interactively
     def repl(self):
         try:
-            pass # TODO:
+            pass  # TODO:
         except Exception as e:
             print(e, file=sys.stderr, flush=True)

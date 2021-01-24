@@ -3,6 +3,7 @@
 from .token import Token
 from .genshi import Genshi
 
+
 class Lexer:
 
     def __init__(self):
@@ -16,7 +17,7 @@ class Lexer:
         self.__stmt = stmt
         c = self.__peek()
 
-        while not c is None:
+        while c is not None:
             # eat all blanks
             while c.isspace():
                 c = self.__consume()
@@ -24,7 +25,7 @@ class Lexer:
                     self.__rewind()
                     break
             start_pos = self.__pos + 1
-            
+
             if c == '"':
                 t = self.__lex_string(start_pos)
             elif c.isalpha():
@@ -45,7 +46,7 @@ class Lexer:
         lexeme = self.__consume()
         c = self.__consume()
 
-        while not c is None:
+        while c is not None:
             if c == '"':
                 lexeme += c
                 break
@@ -68,7 +69,8 @@ class Lexer:
                     break
             lexeme += c
             c = self.__consume()
-        return Token((start_pos, self.__pos), Genshi.TT_UFLOAT if is_float else Genshi.TT_UINT, lexeme)
+        tt = Genshi.TT_UFLOAT if is_float else Genshi.TT_UINT
+        return Token((start_pos, self.__pos), tt, lexeme)
 
     # Lex identifier or keyword
     def __lex_word(self, start_pos):
@@ -81,7 +83,11 @@ class Lexer:
                 break
             lexeme += c
             c = self.__consume()
-        tt = Genshi.KEYWORDS[lexeme] if lexeme in Genshi.KEYWORDS else Genshi.TT_IDENTIFIER
+
+        if lexeme in Genshi.KEYWORDS:
+            tt = Genshi.KEYWORDS[lexeme]
+        else:
+            tt = Genshi.TT_IDENTIFIER
         return Token((start_pos, self.__pos), tt, lexeme.upper())
 
     # Lex symbol (operator or syntax)
@@ -89,7 +95,7 @@ class Lexer:
         c = self.__consume()
 
         if c is not None and ((c + self.__peek()) in Genshi.SYMBOLS):
-            lexeme = c + self.__consume() # two char symbol
+            lexeme = c + self.__consume()  # two char symbol
         else:
             lexeme = c
         return Token((start_pos, self.__pos), Genshi.SYMBOLS[lexeme], lexeme)
@@ -106,4 +112,6 @@ class Lexer:
 
     # Peek the current character
     def __peek(self):
-        return None if self.__pos >= len(self.__stmt) else self.__stmt[self.__pos]
+        if self.__pos >= len(self.__stmt):
+            return None
+        return self.__stmt[self.__pos]

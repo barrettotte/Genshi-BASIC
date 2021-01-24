@@ -1,7 +1,5 @@
 # Parse list of tokens
 
-from .token import Token
-
 class Parser:
 
     def __init__(self):
