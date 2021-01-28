@@ -10,7 +10,7 @@ class Genshi:
 
     # Keywords
     KW_ABS = 10     # absolute value
-    KW_AND = 11     # boolean AND
+    KW_AND = 11     # logical AND
     KW_ASC = 12     # convert char to ASCII value
     KW_ATN = 13     # arc tangent
     KW_CHR = 14     # convert number (0-255) to ASCII char
@@ -28,34 +28,28 @@ class Genshi:
     KW_LEFT = 26    # substring starting at left
     KW_LEN = 27     # length of string
     KW_LET = 28     # variable declaration
-    KW_LIST = 29    # display current program
-    KW_LOAD = 30    # load file
-    KW_LOG = 31     # natural logarithm
-    KW_MID = 32     # substring
-    KW_NEW = 33     # release all memory
-    KW_NEXT = 34    # end for loop block
-    KW_NOT = 35     # boolean NOT
-    KW_ON = 36      # go to line number in list given index
-    KW_OR = 37      # boolean OR
-    KW_PRINT = 38   # print
-    KW_READ = 39    # read constants from DATA
-    KW_REM = 40     # comment (remark)
-    KW_RETURN = 41  # return from subroutine, used with GOSUB
-    KW_RIGHT = 42   # substring starting at right
-    KW_RND = 43     # random float
-    KW_RUN = 44     # starts BASIC program
-    KW_SAVE = 45    # saves BASIC program to disk
-    KW_SGN = 46     # negative=-1, zero=0, positive=1
-    KW_SIN = 47     # sine
-    KW_SPC = 48     # whitespaces
-    KW_SQR = 49     # square root
-    KW_STEP = 50    # increment of FOR loop
-    KW_STOP = 51    # stops BASIC program
-    KW_STR = 52     # convert number to string
-    KW_TAN = 53     # tangent
-    KW_THEN = 54    # IF..THEN
-    KW_TO = 55      # FOR loop
-    KW_XOR = 56     # Boolean XOR
+    KW_LOG = 29     # natural logarithm
+    KW_MID = 30     # substring
+    KW_NEXT = 31    # end for loop block
+    KW_NOT = 32     # logical NOT
+    KW_ON = 33      # go to line number in list given index
+    KW_OR = 34      # logical OR
+    KW_PRINT = 35   # print
+    KW_READ = 36    # read constants from DATA
+    KW_REM = 37     # comment (remark)
+    KW_RETURN = 38  # return from subroutine, used with GOSUB
+    KW_RIGHT = 39   # substring starting at right
+    KW_RND = 40     # random float
+    KW_SGN = 41     # negative=-1, zero=0, positive=1
+    KW_SIN = 42     # sine
+    KW_SPC = 43     # whitespaces
+    KW_SQR = 44     # square root
+    KW_STEP = 45    # increment of FOR loop
+    KW_STR = 46     # convert number to string
+    KW_TAN = 47     # tangent
+    KW_THEN = 48    # IF..THEN
+    KW_TO = 49      # FOR loop
+    KW_XOR = 50     # logical XOR
 
     # Symbols (operators or additional syntax)
     SYM_ADD = 70
@@ -79,17 +73,16 @@ class Genshi:
     # Keyword lookup table
     KEYWORDS = {
         'ABS':  KW_ABS, 'AND': KW_AND, 'ASC': KW_ASC, 'ATN': KW_ATN,
-        'CHR$': KW_CHR, 'COS': KW_COS, 'DATA': KW_DATA, 'DIM': KW_DIM,
+        'CHR': KW_CHR, 'COS': KW_COS, 'DATA': KW_DATA, 'DIM': KW_DIM,
         'END':  KW_END, 'EXP': KW_EXP, 'FOR': KW_FOR, 'GOSUB': KW_GOSUB,
         'GOTO': KW_GOTO, 'IF':  KW_IF, 'INPUT': KW_INPUT, 'INT': KW_INT,
-        'LEFT$': KW_LEFT, 'LEN': KW_LEN, 'LET': KW_LET, 'LIST': KW_LIST,
-        'LOAD': KW_LOAD, 'LOG': KW_LOG, 'MID$': KW_MID, 'NEW': KW_NEW,
-        'NEXT': KW_NEXT, 'NOT': KW_NOT, 'ON': KW_ON, 'OR': KW_OR,
-        'PRINT': KW_PRINT, 'READ': KW_READ, 'REM': KW_REM, 'RETURN': KW_RETURN,
-        'RIGHT$': KW_RIGHT, 'RND': KW_RND, 'RUN': KW_RUN, 'SAVE': KW_SAVE,
-        'SGN': KW_SGN, 'SIN': KW_SIN, 'SPC': KW_SPC, 'SQR': KW_SQR,
-        'STEP': KW_STEP, 'STOP': KW_STOP, 'STR$': KW_STR, 'TAN': KW_TAN,
-        'THEN': KW_THEN, 'TO': KW_TO, 'XOR': KW_XOR
+        'LEFT': KW_LEFT, 'LEN': KW_LEN, 'LET': KW_LET, 'LOG': KW_LOG, 
+        'MID': KW_MID, 'NEXT': KW_NEXT, 'NOT': KW_NOT, 'ON': KW_ON, 
+        'OR': KW_OR, 'PRINT': KW_PRINT, 'READ': KW_READ, 'REM': KW_REM,
+        'RETURN': KW_RETURN, 'RIGHT': KW_RIGHT, 'RND': KW_RND, 'SGN': KW_SGN, 
+        'SIN': KW_SIN, 'SPC': KW_SPC, 'SQR': KW_SQR, 'STEP': KW_STEP, 
+        'STR': KW_STR, 'TAN': KW_TAN, 'THEN': KW_THEN, 'TO': KW_TO, 
+        'XOR': KW_XOR
     }
 
     # Symbol lookup table

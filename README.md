@@ -4,6 +4,12 @@ An interpreter for Genshi BASIC; A BASIC dialect based on BASIC version 2.
 Even though writing an interpreter for a custom BASIC dialect is pretty useless, the same 
 lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.
 
+I originally wrote this in 2019, but decided that this year (2021) I would rewrite it
+to practice concepts I had learned since the original implementation.
+
+I did get kind of lazy and skipped out on implementing a REPL, so for right now it
+justs interprets an array of strings or a source file.
+
 
 ## Genshi BASIC
 Genshi BASIC has ?? keywords and ? symbolic operators. TODO:
@@ -24,9 +30,16 @@ as reference for BASIC version 2.
 Removed:
 
 - function declarations - ```DEF```, ```FN```
-- memory operations - ```FRE```, ```PEEK```, ```POKE```, ```WAIT```
+- memory operations - ```FRE```, ```PEEK```, ```POKE```, ```WAIT```, ```NEW```
 - system operations - ```GET```, ```STATUS```, ```SYS```, ```USR```, ```TIME```
-- file operations - ```OPEN```, ```CLOSE```, ```VERIFY```
+- file operations - ```OPEN```, ```LOAD```, ```CLOSE```, ```VERIFY```, ```SAVE```
+- "interactive" operations - ```RUN```, ```STOP```, ```LIST```
+
+Changed:
+
+- string variables are no longer required to end with '$'
+- removed '$' characters from ```CHR$,LEFT$,MID$,RIGHT$``` operations
+- ```LET``` is now required for declaring variables
 
 Added:
 
