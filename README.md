@@ -39,7 +39,6 @@ Changed:
 
 - string variables are no longer required to end with '$'
 - removed '$' characters from ```CHR$,LEFT$,MID$,RIGHT$``` operations
-- ```LET``` is now required for declaring variables
 
 Added:
 
