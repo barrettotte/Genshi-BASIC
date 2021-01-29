@@ -1,4 +1,4 @@
-# The lexer scans a genshi BASIC statement and breaks it into a list of tokens
+# Scan single statement and breaks it into a list of tokens
 
 from .token import Token
 from .genshi import Genshi

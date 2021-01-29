@@ -1,4 +1,8 @@
-# Parse list of tokens
+# Parse list of tokens one line at a time.
+#
+# Rather than build a parse tree and then traverse it, 
+# just evaluate expressions as is, build the symbol table,
+# and let the interpreter handle branching (GOTO,GOSUB,etc).
 
 from .stack import Stack
 from .genshi import Genshi
@@ -11,7 +15,15 @@ class Parser:
         self.__line_no = 0
         self.__symbols = {}
         self.__op_stack = Stack()
-        self.__pgm_data = []
+        self.__pgm_data = []  # DATA,READ
+    
+    # peek symbol table, return a copy
+    def peek_symbols(self):
+        return self.__symbols.copy()
+
+    # peek program data, return a copy
+    def peek_data(self):
+        return self.__pgm_data.copy()
 
     # parse token list and return syntax tree
     def parse(self, tokens, line_no_tok):
@@ -19,15 +31,15 @@ class Parser:
         self.__tokens = tokens
         self.__line_no = line_no_tok.lexeme
         self.__tok = self.__tokens[self.__idx]
-        self.__parse_stmt()
+        return self.__parse_stmt()
 
     # handler for base statements
     def __parse_stmt(self):
         k = self.__tok.kind
         if k == Genshi.KW_REM:
-            pass  # ignore comments
+            return None  # ignore comments
         elif k in self.PARSE_DICT:
-            self.PARSE_DICT[k](self)
+            return self.PARSE_DICT[k](self)
         self.__raise(f'Invalid statement found')
 
     # consume a token
@@ -66,13 +78,39 @@ class Parser:
             self.__parse_expr_logic()
             self.__symbols[var] = self.__op_stack.pop()
         elif self.__tok.kind == Genshi.SYM_LPAREN:
-            self.parse_arrassign(var)  # MYARR(1)="WASD"
+            self.__parse_assign_arr(f'@{var}')
         else:
             self.__raise(f"Could not assign variable '{var}'")
     
     # parse array element assignment
     def __parse_assign_arr(self, var):
-        raise NotImplementedError('assign_arr')
+        self.__assert_syntax(Genshi.SYM_LPAREN)
+        self.__consume()                                 # (
+        indices = self.__parse_list([Genshi.SYM_COMMA])  #  I,J,K
+
+        if var not in self.__symbols:
+            self.__raise(f"Array '{var[1:]}' is undefined", KeyError)
+        dims = self.__get_arr_dim(self.__symbols[var])
+
+        if dims != len(indices):
+            self.__raise(f"Invalid access to array '{var[1:]}'", IndexError)
+        self.__assert_syntax(Genshi.SYM_RPAREN)
+        self.__consume()                                 # )
+        self.__assert_syntax(Genshi.SYM_EQ)
+        self.__consume()                                 # =
+
+        self.__parse_expr_logic()
+        val = self.__op_stack.pop()
+
+        try:
+            if dims == 1:
+                self.__symbols[var]
+            elif dims == 2:
+                self.__symbols[var]
+            elif dims == 3:
+                self.__symbols[var]
+        except IndexError as e:
+            self.__raise('Array index out of bounds', e)
 
     # parse internal program data (constants)
     def __parse_data(self):
@@ -207,8 +245,8 @@ class Parser:
                 return arr[indices[0]][indices[1]]
             elif dims == 3:
                 return arr[indices[0]][indices[1]][indices[2]]
-        except IndexError:
-            self.__raise(f'Array index out of bounds', IndexError)
+        except IndexError as e:
+            self.__raise(f'Array index out of bounds', e)
 
     # get dimension of array
     def __get_arr_dim(self, arr):
@@ -235,11 +273,12 @@ class Parser:
             (r, l) = self.__pop_two()
 
             if op == Genshi.KW_AND:
-                self.__op_stack.push(l and r)
+                val = l and r
             elif op == Genshi.KW_OR:
-                self.__op_stack.push(l or r)
+                val = l or r
             else:
-                self.__op_stack.push(l ^ r)
+                val = l ^ r
+            self.__op_stack.push(val)
     
     # parse a relational expression
     def __parse_expr_rel(self):
@@ -252,17 +291,18 @@ class Parser:
             (r, l) = self.__pop_two()
 
             if op == Genshi.SYM_LT:
-                self.__op_stack.push(l < r)
+                val = l < r
             elif op == Genshi.SYM_LE:
-                self.__op_stack.push(l <= r)
+                val = l <= r
             elif op == Genshi.SYM_EQ:
-                self.__op_stack.push(l == r)
+                val = l == r
             elif op == Genshi.SYM_GE:
-                self.__op_stack.push(l >= r)
+                val = l >= r
             elif op == Genshi.SYM_GT:
-                self.__op_stack.push(l > r)
+                val = l > r
             elif op == Genshi.SYM_NE:
-                self.__op_stack.push(l != r)
+                val = l != r
+            self.__op_stack.push(val)
 
     def __parse_for(self):
         raise NotImplementedError('FOR')

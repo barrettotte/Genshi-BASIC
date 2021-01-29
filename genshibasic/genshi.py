@@ -1,6 +1,6 @@
 # "header" file containing definitions for Genshi BASIC
 
-class Genshi:
+class Genshi():
 
     # Token types
     TT_STRING = 0
