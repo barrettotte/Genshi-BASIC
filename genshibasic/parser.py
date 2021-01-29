@@ -6,7 +6,7 @@ from .genshi import Genshi
 class Parser:
 
     def __init__(self):
-        self.__tok_idx = 0
+        self.__idx = 0
         self.__tokens = []
         self.__line_no = 0
         self.__symbols = {}
@@ -14,29 +14,38 @@ class Parser:
         self.__pgm_data = []
 
     # parse token list and return syntax tree
-    def parse(self, tokens, line_no):
-        self.__tok_idx = 0
+    def parse(self, tokens, line_no_tok):
+        self.__idx = 0
         self.__tokens = tokens
-        self.__line_no = line_no
-        self.__tok = self.__tokens[self.__tok_idx]
+        self.__line_no = line_no_tok.lexeme
+        self.__tok = self.__tokens[self.__idx]
         self.__parse_stmt()
 
     # handler for base statements
     def __parse_stmt(self):
         k = self.__tok.kind
-
         if k == Genshi.KW_REM:
-            return None  # ignore comments
+            pass  # ignore comments
         elif k in self.PARSE_DICT:
-            return self.PARSE_DICT[k](self)
-        raise SyntaxError(
-            f'Invalid statement found on line {self.__line_no} => {str(self.__tok)}')
+            self.PARSE_DICT[k](self)
+        self.__raise(f'Invalid statement found')
 
     # consume a token
     def __consume(self):
-        self.__tok_idx += 1
-        if not self.__tok_idx >= len(self.__tokens):
-            self.__tok = self.__tokens[self.__tok_idx]
+        self.__idx += 1
+        if not self.__idx >= len(self.__tokens):
+            self.__tok = self.__tokens[self.__idx]
+
+    # utility so i can cut down on writing "on line x" in each exception
+    def __raise(self, msg, err_type=SyntaxError):
+        e = f"{msg} on line {self.__line_no}\n\tcurrent token: {self.__tok}"
+        raise err_type(e)
+
+    # assert syntax based on current token
+    def __assert_syntax(self, expected):
+        actual = self.__tok.kind
+        if actual != expected:
+            self.__raise(f"Expected '{expected}', but got '{actual}'")
 
     # check if token is a relational operator
     def __is_rel_op(self, t):
@@ -50,25 +59,66 @@ class Parser:
     # parse variable or array element assignment
     def __parse_assign(self):
         var = self.__tok.lexeme
-        self.__consume()
+        self.__consume()  # MYVAR
 
         if self.__tok.kind == Genshi.SYM_EQ:
-            self.__consume()
+            self.__consume()  # =
             self.__parse_expr_logic()
             self.__symbols[var] = self.__op_stack.pop()
         elif self.__tok.kind == Genshi.SYM_LPAREN:
-            return self.parse_arrassign(var)  # MYARR(1)="WASD"
-        raise SyntaxError(f'Could not assign variable {var} on line {self.__line_no}')
+            self.parse_arrassign(var)  # MYARR(1)="WASD"
+        else:
+            self.__raise(f"Could not assign variable '{var}'")
     
     # parse array element assignment
     def __parse_assign_arr(self, var):
         raise NotImplementedError('assign_arr')
 
+    # parse internal program data (constants)
     def __parse_data(self):
-        raise NotImplementedError('DATA')
+        self.__consume()  # DATA
+        self.__pgm_data.extend(self.__parse_list([Genshi.SYM_COMMA]))
 
+    # parse array declaration
     def __parse_dim(self):
-        raise NotImplementedError('DIM')
+        self.__consume()                              # DIM
+        var = f'@{self.__tok.lexeme}'
+        self.__consume()                              # MYARR
+        self.__assert_syntax(Genshi.SYM_LPAREN)
+        self.__consume()                              # (
+        dims = self.__parse_list([Genshi.SYM_COMMA])  #   I,J,K
+        self.__assert_syntax(Genshi.SYM_RPAREN)
+        self.__consume()                              # )
+        dim_len = len(dims)
+
+        if dim_len == 0:
+            self.__raise(f'Array declared with no dimensions')
+        elif dim_len < 0:
+            self.__raise(f'Array declared with invalid dimensions')
+        elif dim_len > 3:
+            self.__raise(f'Array declared with too many dimensions')
+
+        arr_init = [0]
+        if dim_len >= 1:
+            arr_init = [arr_init * dims[0]]  # 1D with I elements
+        if dim_len >= 2:
+            arr_init = [arr_init * dims[1]]  # 2D with IxJ elements
+        if dim_len == 3:
+            arr_init = [arr_init * dims[2]]  # 3D with IxJxK elements
+        self.__symbols[var] = arr_init
+
+    # parse a list of expressions with delimiters
+    def __parse_list(self, delimiters):
+        vals = []
+        if not self.__idx >= len(self.__tokens):
+            self.__parse_expr()
+            vals.append(self.__op_stack.pop())
+
+            while self.__tok.kind in delimiters:
+                self.__consume()  # delimiter
+                self.__parse_expr()
+                vals.append(self.__op_stack.pop())
+        return vals
 
     # parse expression (add or sub two terms)
     def __parse_expr(self):
@@ -76,7 +126,7 @@ class Parser:
 
         while self.__tok.kind in [Genshi.SYM_ADD, Genshi.SYM_SUB]:
             op = self.__tok.kind
-            self.__consume()
+            self.__consume()  #  +  -
             self.__parse_term()
             (r, l) = self.__pop_two()
             self.__op_stack.push((l + r) if op == Genshi.SYM_ADD else (l - r))
@@ -84,12 +134,11 @@ class Parser:
     # parse an expression term (mul,div,mod two factors)
     def __parse_term(self):
         self.__parse_factor()
-
         # TODO: preserve sign?
 
         while self.__tok.kind in [Genshi.SYM_MUL, Genshi.SYM_DIV, Genshi.SYM_MOD]:
             op = self.__tok.kind
-            self.__consume()
+            self.__consume()  #  *  /  %
             self.__parse_factor()
             (r, l) = self.__pop_two()
 
@@ -102,18 +151,17 @@ class Parser:
 
     # parse an expression factor (atomic unit of numerical expression)
     def __parse_factor(self):
-
         if self.__tok.kind == Genshi.TT_STRING:
             self.__op_stack.push(self.__tok.lexeme)
-            self.__consume()
+            self.__consume()  # string literal
 
         elif self.__tok.kind == Genshi.TT_UINT:
             self.__op_stack.push(int(self.__tok.lexeme))
-            self.__consume()
+            self.__consume()  # integer literal
 
         elif self.__tok.kind == Genshi.TT_UFLOAT:
             self.__op_stack.push(float(self.__tok.lexeme))
-            self.__consume()
+            self.__consume()  # floating point literal
 
         elif self.__tok.kind == Genshi.TT_IDENTIFIER:
             var = self.__tok.lexeme
@@ -123,36 +171,27 @@ class Parser:
             elif var in self.__symbols:
                 self.__op_stack.push(self.__symbols[var])
             else:
-                raise SyntaxError(f'Variable {var} is undefined on line {self.__line_no}')
-            self.__consume()
+                self.__raise(f"Variable '{var}' is undefined")
+            self.__consume()  # identifier
 
-        elif self.tok_kind in self.BIF_DICT:
+        elif self.__tok.kind in self.BIF_DICT:
             self.__op_stack(self.BIF_DICT[self.__tok.kind](self))
 
-        elif self.tok_kind == Genshi.SYM_LPAREN:
+        elif self.__tok.kind == Genshi.SYM_LPAREN:
             raise NotImplementedError('factor => GROUPS!!')  # TODO:
-        
+
         else:
-            raise RuntimeError(f'Unexpected value for factor on line {self.__line_no}')
+            self.__raise('Unexpected value for factor', RuntimeError)
 
     # parse factor as an array element
     def __parse_factor_array(self):
         var = f'@{self.__token.lexeme}'
-        self.__consume()
-
-        if self.__tok.kind != Genshi.SYM_LPAREN:
-            raise SyntaxError(f"Expected '(' on line {self.__line_no}")
-        
-        indices = []  #  A(I,J,K)
-        if not self.__tok_idx >= len(self.__tokens):
-            self.__parse_expr()
-            indices.append(self.__op_stack.pop())
-
-            while self.__tok.kind == Genshi.SYM_COMMA:
-                self.__consume()
-                self.__parse_expr()
-                indices.append(self.__op_stack.pop())
-
+        self.__consume()                                 # MYARR
+        self.__assert_syntax(Genshi.SYM_LPAREN)
+        self.__consume()                                 # (
+        indices = self.__parse_list([Genshi.SYM_COMMA])  #   I,J,K
+        self.__assert_syntax(Genshi.SYM_RPAREN)
+        self.__consume()                                 # )
         elem = self.__get_arr_elem(self.__symbols[var], indices)
         self.__op_stack.push(elem)
 
@@ -160,7 +199,7 @@ class Parser:
     def __get_arr_elem(self, arr, indices):
         dims = len(indices)
         if dims != self.__get_arr_dim(arr):
-            raise RuntimeError(f'Array dimension mismatch on line {self.__line_no}')
+            self.__raise(f'Array dimension mismatch', RuntimeError)
         try:
             if dims == 1:
                 return arr[indices[0]]
@@ -169,14 +208,14 @@ class Parser:
             elif dims == 3:
                 return arr[indices[0]][indices[1]][indices[2]]
         except IndexError:
-            raise SyntaxError(f'Array index out of bounds on line {self.__line_no}')
-    
+            self.__raise(f'Array index out of bounds', IndexError)
+
     # get dimension of array
     def __get_arr_dim(self, arr):
         if not type(arr) == list:
             return []
         return [len(arr)] + self.__get_arr_dim(arr[0])
-        # TODO: check if works correctly with jagged arrays?
+        # TODO: check if jagged arrays are a thing ?
 
     # parse a logical expression (AND,OR,XOR,NOT)
     def __parse_expr_logic(self):
@@ -187,13 +226,12 @@ class Parser:
 
         while self.__tok.kind in [Genshi.KW_AND, Genshi.KW_OR, Genshi.KW_XOR]:
             op = self.__tok.kind
-            self.__consume()
+            self.__consume()  #  AND  OR  XOR
 
             if self.__tok.kind == Genshi.KW_NOT:
                 self.__parse_not()
             else:
                 self.__parse_expr_rel()
-
             (r, l) = self.__pop_two()
 
             if op == Genshi.KW_AND:
@@ -209,7 +247,7 @@ class Parser:
 
         if self.__is_rel_op(self.__tok.kind):
             op = self.__tok.kind
-            self.__consume()
+            self.__consume()  #  >  <  >=  <=  =  <>
             self.__parse_expr()
             (r, l) = self.__pop_two()
 
@@ -243,17 +281,29 @@ class Parser:
 
     # parse variable declaration
     def __parse_let(self):
-        self.__consume()
+        self.__consume()  # LET
         self.__parse_assign()
 
     # parse logical NOT
     def __parse_not(self):
-        self.__consume()
+        self.__consume()  # NOT
         self.__parse_expr_rel()
         self.__op_stack.push(not self.__op_stack.pop())
 
+    # parse print to screen
     def __parse_print(self):
-        raise NotImplementedError('PRINT')
+        self.__consume()  # PRINT
+        if not self.__idx >= len(self.__tokens):
+            # TODO: refactor
+            self.__parse_expr_logic()
+            print(self.__op_stack.pop, end='')
+
+            #  use additional zone(s) => PRINT A,B,5
+            while self.__tok.kind in [Genshi.SYM_COMMA, Genshi.SYM_SEMICOLON]:
+                self.__consume()  #  ,  ;
+                self.__parse_expr_logic()
+                print(self.__op_stack.pop, end='')
+        print('')
 
     def __parse_read(self):
         raise NotImplementedError('READ')

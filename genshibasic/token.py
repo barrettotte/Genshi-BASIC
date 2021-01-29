@@ -13,5 +13,5 @@ class Token:
     def __str__(self):
         s = f"Position=({self.pos[0]}:{self.pos[1]})"
         s += f", Kind={self.kind}"
-        s += f", 'Lexeme={self.lexeme}'"
+        s += f", Lexeme='{self.lexeme}'"
         return s
