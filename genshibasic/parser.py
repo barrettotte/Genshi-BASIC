@@ -4,8 +4,11 @@
 # just evaluate expressions as is, build the symbol table,
 # and let the interpreter handle branching (GOTO,GOSUB,etc).
 
+import math
+import random
 from .stack import Stack
 from .genshi import Genshi
+
 
 class Parser:
 
@@ -15,8 +18,10 @@ class Parser:
         self.__line_no = 0
         self.__symbols = {}
         self.__op_stack = Stack()
-        self.__pgm_data = []  # DATA,READ
-    
+        self.__pgm_data = []    # DATA,READ
+        self.__out_buffer = []  # PRINT  (unit tests)
+        self.__in_buffer = []   # INPUT  (unit tests)
+
     # peek symbol table, return a copy
     def peek_symbols(self):
         return self.__symbols.copy()
@@ -24,6 +29,10 @@ class Parser:
     # peek program data, return a copy
     def peek_data(self):
         return self.__pgm_data.copy()
+
+    # peek output buffer, return a copy
+    def peek_output(self):
+        return self.__out_buffer.copy()
 
     # parse token list and return syntax tree
     def parse(self, tokens, line_no_tok):
@@ -40,7 +49,7 @@ class Parser:
             return None  # ignore comments
         elif k in self.PARSE_DICT:
             return self.PARSE_DICT[k](self)
-        self.__raise(f'Invalid statement found')
+        self.__raise('Invalid statement found')
 
     # consume a token
     def __consume(self):
@@ -54,15 +63,29 @@ class Parser:
         raise err_type(e)
 
     # assert syntax based on current token
-    def __assert_syntax(self, expected):
-        actual = self.__tok.kind
-        if actual != expected:
+    def __assert_syntax(self, expected_kind):
+        actual_kind = self.__tok.kind
+        if actual_kind != expected_kind:
+            actual = self.__get_tok_name(actual_kind)
+            expected = self.__get_tok_name(expected_kind)
             self.__raise(f"Expected '{expected}', but got '{actual}'")
+
+    # convert token kind to its actual name
+    def __get_tok_name(self, tok_id):
+        if tok_id >= 0 and tok_id <= 3:
+            return ["STRING", "INT", "FLOAT", "IDENTIFIER"][tok_id]
+        for k, v in Genshi.KEYWORDS.items():
+            if v == tok_id:
+                return k
+        for k, v in Genshi.SYMBOLS.items():
+            if v == tok_id:
+                return k
+        raise Exception(f'Could not find token with ID {tok_id}')
 
     # check if token is a relational operator
     def __is_rel_op(self, t):
-        return t in [Genshi.SYM_LT, Genshi.SYM_LE, Genshi.SYM_EQ, 
-            Genshi.SYM_GE, Genshi.SYM_GT, Genshi.SYM_NE]
+        return t in [Genshi.SYM_LT, Genshi.SYM_LE, Genshi.SYM_EQ,
+                     Genshi.SYM_GE, Genshi.SYM_GT, Genshi.SYM_NE]
 
     # pop two operands from operand stack
     def __pop_two(self):
@@ -81,12 +104,12 @@ class Parser:
             self.__parse_assign_arr(f'@{var}')
         else:
             self.__raise(f"Could not assign variable '{var}'")
-    
+
     # parse array element assignment
     def __parse_assign_arr(self, var):
         self.__assert_syntax(Genshi.SYM_LPAREN)
         self.__consume()                                 # (
-        indices = self.__parse_list([Genshi.SYM_COMMA])  #  I,J,K
+        indices = self.__parse_list([Genshi.SYM_COMMA])  # I,J,K
 
         if var not in self.__symbols:
             self.__raise(f"Array '{var[1:]}' is undefined", KeyError)
@@ -104,11 +127,13 @@ class Parser:
 
         try:
             if dims == 1:
-                self.__symbols[var]
+                self.__symbols[var][indices[0]] = val
             elif dims == 2:
-                self.__symbols[var]
+                self.__symbols[var][indices[0]][indices[1]] = val
             elif dims == 3:
-                self.__symbols[var]
+                self.__symbols[var][indices[0]][indices[1]][indices[2]] = val
+            else:
+                self.__raise('Invalid array dimensions', RuntimeError)
         except IndexError as e:
             self.__raise('Array index out of bounds', e)
 
@@ -124,17 +149,17 @@ class Parser:
         self.__consume()                              # MYARR
         self.__assert_syntax(Genshi.SYM_LPAREN)
         self.__consume()                              # (
-        dims = self.__parse_list([Genshi.SYM_COMMA])  #   I,J,K
+        dims = self.__parse_list([Genshi.SYM_COMMA])  # I,J,K
         self.__assert_syntax(Genshi.SYM_RPAREN)
         self.__consume()                              # )
         dim_len = len(dims)
 
         if dim_len == 0:
-            self.__raise(f'Array declared with no dimensions')
+            self.__raise('Array declared with no dimensions')
         elif dim_len < 0:
-            self.__raise(f'Array declared with invalid dimensions')
+            self.__raise('Array declared with invalid dimensions')
         elif dim_len > 3:
-            self.__raise(f'Array declared with too many dimensions')
+            self.__raise('Array declared with too many dimensions')
 
         arr_init = [0]
         if dim_len >= 1:
@@ -164,7 +189,7 @@ class Parser:
 
         while self.__tok.kind in [Genshi.SYM_ADD, Genshi.SYM_SUB]:
             op = self.__tok.kind
-            self.__consume()  #  +  -
+            self.__consume()  # + -
             self.__parse_term()
             (r, l) = self.__pop_two()
             self.__op_stack.push((l + r) if op == Genshi.SYM_ADD else (l - r))
@@ -172,11 +197,10 @@ class Parser:
     # parse an expression term (mul,div,mod two factors)
     def __parse_term(self):
         self.__parse_factor()
-        # TODO: preserve sign?
-
-        while self.__tok.kind in [Genshi.SYM_MUL, Genshi.SYM_DIV, Genshi.SYM_MOD]:
+        while self.__tok.kind in [Genshi.SYM_MUL, Genshi.SYM_DIV,
+                                  Genshi.SYM_MOD]:
             op = self.__tok.kind
-            self.__consume()  #  *  /  %
+            self.__consume()  # * / %
             self.__parse_factor()
             (r, l) = self.__pop_two()
 
@@ -213,7 +237,7 @@ class Parser:
             self.__consume()  # identifier
 
         elif self.__tok.kind in self.BIF_DICT:
-            self.__op_stack(self.BIF_DICT[self.__tok.kind](self))
+            self.__parse_bif()
 
         elif self.__tok.kind == Genshi.SYM_LPAREN:
             raise NotImplementedError('factor => GROUPS!!')  # TODO:
@@ -221,13 +245,33 @@ class Parser:
         else:
             self.__raise('Unexpected value for factor', RuntimeError)
 
+    # parse a built in function
+    def __parse_bif(self):
+        bif = self.__tok.lexeme
+        bif_kind = self.__tok.kind
+        self.__consume  # ABS
+        self.__assert_syntax(Genshi.SYM_LPAREN)
+        self.__consume()  # (
+        self.__parse_expr()
+
+        try:
+            val = self.__op_stack.pop()
+            self.__op_stack.push(self.BIF_DICT[bif_kind](self, val))
+        except TypeError as e_t:
+            self.__raise(f'Invalid argument type given to {bif}', e_t)
+        except ValueError as e_v:
+            self.__raise(f'Invalid argument given to {bif}', e_v)
+
+        self.__assert_syntax(Genshi.SYM_RPAREN)
+        self.__consume()  # )
+
     # parse factor as an array element
     def __parse_factor_array(self):
         var = f'@{self.__token.lexeme}'
         self.__consume()                                 # MYARR
         self.__assert_syntax(Genshi.SYM_LPAREN)
         self.__consume()                                 # (
-        indices = self.__parse_list([Genshi.SYM_COMMA])  #   I,J,K
+        indices = self.__parse_list([Genshi.SYM_COMMA])  # I,J,K
         self.__assert_syntax(Genshi.SYM_RPAREN)
         self.__consume()                                 # )
         elem = self.__get_arr_elem(self.__symbols[var], indices)
@@ -237,7 +281,7 @@ class Parser:
     def __get_arr_elem(self, arr, indices):
         dims = len(indices)
         if dims != self.__get_arr_dim(arr):
-            self.__raise(f'Array dimension mismatch', RuntimeError)
+            self.__raise('Array dimension mismatch', RuntimeError)
         try:
             if dims == 1:
                 return arr[indices[0]]
@@ -246,14 +290,13 @@ class Parser:
             elif dims == 3:
                 return arr[indices[0]][indices[1]][indices[2]]
         except IndexError as e:
-            self.__raise(f'Array index out of bounds', e)
+            self.__raise('Array index out of bounds', e)
 
     # get dimension of array
     def __get_arr_dim(self, arr):
         if not type(arr) == list:
             return []
         return [len(arr)] + self.__get_arr_dim(arr[0])
-        # TODO: check if jagged arrays are a thing ?
 
     # parse a logical expression (AND,OR,XOR,NOT)
     def __parse_expr_logic(self):
@@ -264,7 +307,7 @@ class Parser:
 
         while self.__tok.kind in [Genshi.KW_AND, Genshi.KW_OR, Genshi.KW_XOR]:
             op = self.__tok.kind
-            self.__consume()  #  AND  OR  XOR
+            self.__consume()  # AND OR XOR
 
             if self.__tok.kind == Genshi.KW_NOT:
                 self.__parse_not()
@@ -279,14 +322,14 @@ class Parser:
             else:
                 val = l ^ r
             self.__op_stack.push(val)
-    
+
     # parse a relational expression
     def __parse_expr_rel(self):
         self.__parse_expr()
 
         if self.__is_rel_op(self.__tok.kind):
             op = self.__tok.kind
-            self.__consume()  #  >  <  >=  <=  =  <>
+            self.__consume()  # > < >= <= = <>
             self.__parse_expr()
             (r, l) = self.__pop_two()
 
@@ -309,10 +352,10 @@ class Parser:
 
     def __parse_gosub(self):
         raise NotImplementedError('GOSUB')
-    
+
     def __parse_goto(self):
         raise NotImplementedError('GOTO')
-    
+
     def __parse_if(self):
         raise NotImplementedError('IF')
 
@@ -332,80 +375,121 @@ class Parser:
 
     # parse print to screen
     def __parse_print(self):
+        buffer = ''
         self.__consume()  # PRINT
         if not self.__idx >= len(self.__tokens):
             # TODO: refactor
             self.__parse_expr_logic()
-            print(self.__op_stack.pop, end='')
+            buffer += self.__op_stack.pop()
 
             #  use additional zone(s) => PRINT A,B,5
             while self.__tok.kind in [Genshi.SYM_COMMA, Genshi.SYM_SEMICOLON]:
-                self.__consume()  #  ,  ;
+                self.__consume()  # , ;
                 self.__parse_expr_logic()
-                print(self.__op_stack.pop, end='')
-        print('')
+                buffer += self.__op_stack.pop()
+        print(buffer)
+        self.__out_buffer.append(buffer)
 
     def __parse_read(self):
         raise NotImplementedError('READ')
 
-    ### Built-in Functions ###
+    # ABS - absolute value
+    def __bif_abs(self, val):
+        return abs(val)
 
-    def __bif_abs(self):
-        raise NotImplementedError('ABS')
+    # ASC - convert to ASCII
+    def __bif_asc(self, val):
+        return ord(val)
 
-    def __bif_asc(self):
-        raise NotImplementedError('ASC')
+    # ATN - arc tangent
+    def __bif_atn(self, val):
+        return math.atan(val)
 
-    def __bif_atn(self):
-        raise NotImplementedError('ATN')
+    # CHR - convert to character
+    def __bif_chr(self, val):
+        return chr(val)
 
-    def __bif_chr(self):
-        raise NotImplementedError('CHR')
+    # COS - cosine
+    def __bif_cos(self, val):
+        return math.cos(val)
 
-    def __bif_cos(self):
-        raise NotImplementedError('COS')
+    # EXP - inverse natural log (e^x)
+    def __bif_exp(self, val):
+        return math.exp(val)
 
-    def __bif_exp(self):
-        raise NotImplementedError('EXP')
+    # INT - round to integer
+    def __bif_int(self, val):
+        return math.floor(val)
 
-    def __bif_int(self):
-        raise NotImplementedError('INT')
+    # LEFT - substring starting from left
+    def __bif_left(self, val):
+        args = self.__parse_list([Genshi.SYM_COMMA])
+        # args => [variable, index]
+        if len(args) != 2:
+            self.__raise(f'Expected 2 arguments, but got {len(args)}')
+        return str(val[0:args[2]])
 
-    def __bif_left(self):
-        raise NotImplementedError('LEFT')
+    # LEN - length of value
+    def __bif_len(self, val):
+        return len(val)
 
-    def __bif_len(self):
-        raise NotImplementedError('LEN')
+    # LOG - natural logarithm (ln)
+    def __bif_log(self, val):
+        return math.log(val)
 
-    def __bif_log(self):
-        raise NotImplementedError('LOG')
+    # MID - substring
+    def __bif_mid(self, val):
+        args = self.__parse_list([Genshi.SYM_COMMA])
+        # args => [variable, left index, right index]
+        if len(args) != 3:
+            self.__raise(f'Expected 3 arguments, but got {len(args)}')
+        return str(val[args[1]:args[2]])
 
-    def __bif_mid(self):
-        raise NotImplementedError('MID')
+    # RIGHT - substring starting from right
+    def __bif_right(self, val):
+        args = self.__parse_list([Genshi.SYM_COMMA])
+        # args => [variable, index]
+        if len(args) != 2:
+            self.__raise(f'Expected 2 arguments, but got {len(args)}')
+        return str(val[args[2]:-1])
 
-    def __bif_right(self):
-        raise NotImplementedError('RIGHT')
+    # RND - random int from 0-N or N-M (inclusive)
+    def __bif_rnd(self, val):
+        args = self.__parse_list([Genshi.SYM_COMMA])
+        if len(args) == 1:
+            return random.randrange(args[0])  # inclusive 0-N
+        elif len(args) == 2:
+            return random.randrange(args[1], args[2])  # inclusive N-M
+        else:
+            self.__raise(f'Expected 1 or 2 arguments, but got {len(args)}')
 
-    def __bif_rnd(self):
-        raise NotImplementedError('RND')
+    # SGN - give sign of value -1,0,1 respectively
+    def __bif_sgn(self, val):
+        if val < 0:
+            return -1
+        if val > 0:
+            return 1
+        return 0
 
-    def __bif_sgn(self):
-        raise NotImplementedError('SGN')
+    # SIN - sine
+    def __bif_sin(self, val):
+        return math.sin(val)
 
-    def __bif_sin(self):
-        raise NotImplementedError('SIN')
+    # SPC - set number of spaces
+    def __bif_spc(self, val):
+        return ' ' * val
 
-    def __bif_spc(self):
-        raise NotImplementedError('SPC')
+    # SQR - square root
+    def __bif_sqr(self, val):
+        return math.sqrt(val)
 
-    def __bif_sqr(self):
-        raise NotImplementedError('SQR')
+    # STR - convert number to string
+    def __bif_str(self, val):
+        return str(val)
 
-    def __bif_str(self):
-        raise NotImplementedError('STR')
-
-    def __bif_tan(self):
-        raise NotImplementedError('TAN')
+    # TAN - tangent
+    def __bif_tan(self, val):
+        return math.tan(val)
 
     # dictionary of function pointers for "base statements"
     PARSE_DICT = {
@@ -418,11 +502,14 @@ class Parser:
 
     # dictionary of function pointers for all built-in functions
     BIF_DICT = {
-        Genshi.KW_ABS: __bif_abs, Genshi.KW_ASC: __bif_asc, Genshi.KW_ATN: __bif_atn,
-        Genshi.KW_CHR: __bif_chr, Genshi.KW_COS: __bif_cos, Genshi.KW_EXP: __bif_exp,
-        Genshi.KW_INT: __bif_int, Genshi.KW_LEFT: __bif_left, Genshi.KW_LEN: __bif_len,
-        Genshi.KW_LOG: __bif_log, Genshi.KW_MID: __bif_mid, Genshi.KW_RIGHT: __bif_right,
-        Genshi.KW_RND: __bif_rnd, Genshi.KW_SGN: __bif_sgn, Genshi.KW_SIN: __bif_sin,
-        Genshi.KW_SPC: __bif_spc, Genshi.KW_SQR: __bif_sqr, Genshi.KW_STR: __bif_str,
+        Genshi.KW_ABS: __bif_abs, Genshi.KW_ASC: __bif_asc,
+        Genshi.KW_ATN: __bif_atn, Genshi.KW_CHR: __bif_chr,
+        Genshi.KW_COS: __bif_cos, Genshi.KW_EXP: __bif_exp,
+        Genshi.KW_INT: __bif_int, Genshi.KW_LEFT: __bif_left,
+        Genshi.KW_LEN: __bif_len, Genshi.KW_LOG: __bif_log,
+        Genshi.KW_MID: __bif_mid, Genshi.KW_RIGHT: __bif_right,
+        Genshi.KW_RND: __bif_rnd, Genshi.KW_SGN: __bif_sgn,
+        Genshi.KW_SIN: __bif_sin, Genshi.KW_SPC: __bif_spc,
+        Genshi.KW_SQR: __bif_sqr, Genshi.KW_STR: __bif_str,
         Genshi.KW_TAN: __bif_tan,
     }

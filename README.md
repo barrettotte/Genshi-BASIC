@@ -1,5 +1,6 @@
 # Genshi-BASIC
-An interpreter for Genshi BASIC; A BASIC dialect based on BASIC version 2.
+Interpreter for Genshi BASIC; A simple dialect of BASIC created to 
+learn the basics of making a programming language.
 
 Even though writing an interpreter for a custom BASIC dialect is pretty useless, the same 
 lexing, parsing, and interpreting fundamentals I learned can be applied to other languages.

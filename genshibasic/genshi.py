@@ -76,12 +76,12 @@ class Genshi():
         'CHR': KW_CHR, 'COS': KW_COS, 'DATA': KW_DATA, 'DIM': KW_DIM,
         'END':  KW_END, 'EXP': KW_EXP, 'FOR': KW_FOR, 'GOSUB': KW_GOSUB,
         'GOTO': KW_GOTO, 'IF':  KW_IF, 'INPUT': KW_INPUT, 'INT': KW_INT,
-        'LEFT': KW_LEFT, 'LEN': KW_LEN, 'LET': KW_LET, 'LOG': KW_LOG, 
-        'MID': KW_MID, 'NEXT': KW_NEXT, 'NOT': KW_NOT, 'ON': KW_ON, 
+        'LEFT': KW_LEFT, 'LEN': KW_LEN, 'LET': KW_LET, 'LOG': KW_LOG,
+        'MID': KW_MID, 'NEXT': KW_NEXT, 'NOT': KW_NOT, 'ON': KW_ON,
         'OR': KW_OR, 'PRINT': KW_PRINT, 'READ': KW_READ, 'REM': KW_REM,
-        'RETURN': KW_RETURN, 'RIGHT': KW_RIGHT, 'RND': KW_RND, 'SGN': KW_SGN, 
-        'SIN': KW_SIN, 'SPC': KW_SPC, 'SQR': KW_SQR, 'STEP': KW_STEP, 
-        'STR': KW_STR, 'TAN': KW_TAN, 'THEN': KW_THEN, 'TO': KW_TO, 
+        'RETURN': KW_RETURN, 'RIGHT': KW_RIGHT, 'RND': KW_RND, 'SGN': KW_SGN,
+        'SIN': KW_SIN, 'SPC': KW_SPC, 'SQR': KW_SQR, 'STEP': KW_STEP,
+        'STR': KW_STR, 'TAN': KW_TAN, 'THEN': KW_THEN, 'TO': KW_TO,
         'XOR': KW_XOR
     }
 
