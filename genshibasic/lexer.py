@@ -43,13 +43,13 @@ class Lexer:
 
     # Lex a string literal
     def __lex_string(self, start_pos):
-        lexeme = self.__consume()
+        self.__consume()  # opening quote
+        lexeme = ''
         c = self.__consume()
 
         while c is not None:
             if c == '"':
-                lexeme += c
-                break
+                break  # closing quote
             lexeme += c
             c = self.__consume()
         return Token((start_pos, self.__pos), Genshi.TT_STRING, lexeme)
@@ -93,8 +93,9 @@ class Lexer:
     # Lex symbol (operator or syntax)
     def __lex_symbol(self, start_pos):
         c = self.__consume()
+        c2 = self.__peek()
 
-        if c is not None and ((c + self.__peek()) in Genshi.SYMBOLS):
+        if c is not None and c2 is not None and ((c + c2) in Genshi.SYMBOLS):
             lexeme = c + self.__consume()  # two char symbol
         else:
             lexeme = c
