@@ -1,6 +1,6 @@
 # Parse list of tokens one line at a time.
 #
-# Rather than build a parse tree and then traverse it, 
+# Rather than build a parse tree and then traverse it,
 # just evaluate expressions as is, build the symbol table,
 # and let the interpreter handle branching (GOTO,GOSUB,etc).
 
@@ -13,6 +13,7 @@ from .genshi import Genshi
 class Parser:
 
     def __init__(self):
+        self.__halt = False
         self.__idx = 0
         self.__tokens = []
         self.__line_no = 0
@@ -33,6 +34,10 @@ class Parser:
     # peek output buffer, return a copy
     def peek_output(self):
         return self.__out_buffer.copy()
+
+    # determine if program state should be off
+    def is_halted(self):
+        return self.__halt
 
     # parse token list and return syntax tree
     def parse(self, tokens, line_no_tok):
@@ -163,12 +168,16 @@ class Parser:
 
         arr_init = [0]
         if dim_len >= 1:
-            arr_init = [arr_init * dims[0]]  # 1D with I elements
+            arr_init = arr_init * dims[0]  # 1D with I elements
         if dim_len >= 2:
-            arr_init = [arr_init * dims[1]]  # 2D with IxJ elements
+            arr_init = arr_init * dims[1]  # 2D with IxJ elements
         if dim_len == 3:
-            arr_init = [arr_init * dims[2]]  # 3D with IxJxK elements
+            arr_init = arr_init * dims[2]  # 3D with IxJxK elements
         self.__symbols[var] = arr_init
+
+    # parse end of program
+    def __parse_end(self):
+        self.__halt = True
 
     # parse a list of expressions with delimiters
     def __parse_list(self, delimiters):
@@ -181,6 +190,7 @@ class Parser:
                 self.__consume()  # delimiter
                 self.__parse_expr()
                 vals.append(self.__op_stack.pop())
+
         return vals
 
     # parse expression (add or sub two terms)
@@ -249,7 +259,7 @@ class Parser:
     def __parse_bif(self):
         bif = self.__tok.lexeme
         bif_kind = self.__tok.kind
-        self.__consume  # ABS
+        self.__consume()  # ABS
         self.__assert_syntax(Genshi.SYM_LPAREN)
         self.__consume()  # (
         self.__parse_expr()
@@ -378,15 +388,8 @@ class Parser:
         buffer = ''
         self.__consume()  # PRINT
         if not self.__idx >= len(self.__tokens):
-            # TODO: refactor
-            self.__parse_expr_logic()
-            buffer += self.__op_stack.pop()
-
-            #  use additional zone(s) => PRINT A,B,5
-            while self.__tok.kind in [Genshi.SYM_COMMA, Genshi.SYM_SEMICOLON]:
-                self.__consume()  # , ;
-                self.__parse_expr_logic()
-                buffer += self.__op_stack.pop()
+            zones = self.__parse_list([Genshi.SYM_COMMA, Genshi.SYM_SEMICOLON])
+            buffer = ''.join(zones)
         print(buffer)
         self.__out_buffer.append(buffer)
 
@@ -455,7 +458,11 @@ class Parser:
 
     # RND - random int from 0-N or N-M (inclusive)
     def __bif_rnd(self, val):
-        args = self.__parse_list([Genshi.SYM_COMMA])
+        if self.__tok.kind == Genshi.SYM_RPAREN:
+            args = [val]
+        else:
+            args = self.__parse_list([Genshi.SYM_COMMA])
+
         if len(args) == 1:
             return random.randrange(args[0])  # inclusive 0-N
         elif len(args) == 2:
@@ -494,10 +501,11 @@ class Parser:
     # dictionary of function pointers for "base statements"
     PARSE_DICT = {
         Genshi.KW_DATA: __parse_data, Genshi.KW_DIM: __parse_dim,
-        Genshi.KW_FOR: __parse_for, Genshi.KW_GOSUB: __parse_gosub,
-        Genshi.KW_GOTO: __parse_goto, Genshi.KW_IF: __parse_if,
-        Genshi.KW_INPUT: __parse_input, Genshi.KW_LET: __parse_let,
-        Genshi.KW_PRINT: __parse_print, Genshi.KW_READ: __parse_read,
+        Genshi.KW_END: __parse_end, Genshi.KW_FOR: __parse_for,
+        Genshi.KW_GOSUB: __parse_gosub, Genshi.KW_GOTO: __parse_goto, 
+        Genshi.KW_IF: __parse_if, Genshi.KW_INPUT: __parse_input, 
+        Genshi.KW_LET: __parse_let, Genshi.KW_PRINT: __parse_print, 
+        Genshi.KW_READ: __parse_read,
     }
 
     # dictionary of function pointers for all built-in functions
