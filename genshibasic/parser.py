@@ -13,7 +13,6 @@ from .genshi import Genshi
 class Parser:
 
     def __init__(self):
-        self.__halt = False
         self.__idx = 0
         self.__tokens = []
         self.__line_no = 0
@@ -35,10 +34,6 @@ class Parser:
     def peek_output(self):
         return self.__out_buffer.copy()
 
-    # determine if program state should be off
-    def is_halted(self):
-        return self.__halt
-
     # parse token list and return syntax tree
     def parse(self, tokens, line_no_tok):
         self.__idx = 0
@@ -51,10 +46,10 @@ class Parser:
     def __parse_stmt(self):
         k = self.__tok.kind
         if k == Genshi.KW_REM:
-            return None  # ignore comments
+            return (None, None)  # ignore comments
         elif k in self.PARSE_DICT:
             return self.PARSE_DICT[k](self)
-        self.__raise('Invalid statement found')
+        self.__raise('Unexpected statement found')
 
     # consume a token
     def __consume(self):
@@ -146,6 +141,7 @@ class Parser:
     def __parse_data(self):
         self.__consume()  # DATA
         self.__pgm_data.extend(self.__parse_list([Genshi.SYM_COMMA]))
+        return (None, Genshi.STATE_NORMAL)
 
     # parse array declaration
     def __parse_dim(self):
@@ -174,10 +170,11 @@ class Parser:
         if dim_len == 3:
             arr_init = arr_init * dims[2]  # 3D with IxJxK elements
         self.__symbols[var] = arr_init
+        return (None, Genshi.STATE_NORMAL)
 
     # parse end of program
     def __parse_end(self):
-        self.__halt = True
+        return (None, Genshi.STATE_HALT)
 
     # parse a list of expressions with delimiters
     def __parse_list(self, delimiters):
@@ -250,7 +247,9 @@ class Parser:
             self.__parse_bif()
 
         elif self.__tok.kind == Genshi.SYM_LPAREN:
-            raise NotImplementedError('factor => GROUPS!!')  # TODO:
+            self.__consume()  # (
+            self.__parse_expr_logic()
+            self.__consume()  # )
 
         else:
             self.__raise('Unexpected value for factor', RuntimeError)
@@ -357,25 +356,109 @@ class Parser:
                 val = l != r
             self.__op_stack.push(val)
 
+    # parse for loop and handle program flow
     def __parse_for(self):
-        raise NotImplementedError('FOR')
+        self.__consume()  # FOR
+        var = self.__tok.lexeme
+        self.__consume()  # variable
+        self.__assert_syntax(Genshi.SYM_EQ)
+        self.__consume()  # =
 
+        self.__parse_expr()
+        start = self.__op_stack.pop()
+        self.__assert_syntax(Genshi.KW_TO)
+        self.__consume()  # TO
+
+        self.__parse_expr()
+        end = self.__op_stack.pop()
+
+        step = 1
+        if self.__idx < len(self.__tokens):
+            self.__assert_syntax(Genshi.KW_STEP)
+            self.__consume()  # STEP
+            self.__parse_expr()
+            step = self.__op_stack.pop()
+        
+        self.__symbols[var] += step  # if step=0, infinite loop
+
+        if self.__symbols[var] > end and step > 0:
+            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)  # incrementing loop
+        elif self.__symbols[var] < end and step < 0:
+            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)  # decrementing loop
+        return (None, Genshi.STATE_LOOP_START)
+
+    # parse end of for loop
+    def __parse_next(self):
+        self.__consume()  # NEXT
+        return (None, Genshi.STATE_LOOP_NORMAL)
+
+    # parse jump to subroutine
     def __parse_gosub(self):
-        raise NotImplementedError('GOSUB')
+        self.__consume()  # GOSUB
+        self.__parse_expr()
+        return (self.__op_stack.pop(), Genshi.STATE_GOSUB)
+    
+    # parse a return from subroutine
+    def __parse_return(self):
+        self.__consume()  # RETURN
+        return (None, Genshi.STATE_RETURN)
 
+    # parse jump to line number
     def __parse_goto(self):
-        raise NotImplementedError('GOTO')
-
+        self.__consume()  # GOTO
+        self.__parse_expr()
+        return (self.__op_stack.pop(), Genshi.STATE_GOTO)
+    
+    # parse if-then-else statement
     def __parse_if(self):
-        raise NotImplementedError('IF')
+        self.__consume()  # IF
+        self.__parse_expr_logic()
+        cond = self.__op_stack.pop()
+        
+        self.__assert_syntax(Genshi.KW_THEN)
+        self.__consume()  # THEN
 
+        if self.__tok.kind == Genshi.KW_GOTO:
+            self.__consume()  # GOTO
+        self.__parse_expr()
+
+        if cond:
+            return (self.__op_stack.pop(), Genshi.STATE_GOTO)
+
+        if self.__tok.kind == Genshi.KW_ELSE:
+            self.__consume()  # ELSE
+
+            if self.__tok.kind == Genshi.KW_GOTO:
+                self.__consume  # GOTO
+            self.__parse_expr()
+            return (self.__op_stack.pop(), Genshi.STATE_GOTO)
+        return (None, Genshi.STATE_NORMAL)
+
+    # read in single or list of inputs into variables
     def __parse_input(self):
-        raise NotImplementedError('INPUT')
+        self.__consume()  # INPUT
+        
+        if self.__tok.kind == Genshi.TT_STRING:
+            self.__parse_expr_logic()
+            prompt = self.__op_stack.pop()
+            self.__assert_syntax(Genshi.SYM_SEMICOLON)
+            self.__consume()  # ;
+        else:
+            prompt = '?'
+        
+        var_list = self.__parse_list()
+        for var in var_list:
+            try:
+                self.__symbols[var] = input(prompt)
+            except Exception as e:
+                self.__raise(f'Error reading input into {var}', RuntimeError)
+        return (None, Genshi.STATE_NORMAL)   
 
     # parse variable declaration
     def __parse_let(self):
         self.__consume()  # LET
         self.__parse_assign()
+        return (None, Genshi.STATE_NORMAL)
 
     # parse logical NOT
     def __parse_not(self):
@@ -392,9 +475,19 @@ class Parser:
             buffer = ''.join(zones)
         print(buffer)
         self.__out_buffer.append(buffer)
+        return (None, Genshi.STATE_NORMAL)
 
+    # parse read, load data into variables
     def __parse_read(self):
-        raise NotImplementedError('READ')
+        self.__consume()  # READ
+        var_list = self.__parse_list([Genshi.SYM_COMMA])
+        
+        try:
+            for var in var_list:
+                self.__symbols[var] = self.__pgm_data.pop(0)
+        except Exception as e:
+            self.__raise("Error reading data", RuntimeError)
+        return (None, Genshi.STATE_NORMAL)
 
     # ABS - absolute value
     def __bif_abs(self, val):
@@ -505,7 +598,7 @@ class Parser:
         Genshi.KW_GOSUB: __parse_gosub, Genshi.KW_GOTO: __parse_goto, 
         Genshi.KW_IF: __parse_if, Genshi.KW_INPUT: __parse_input, 
         Genshi.KW_LET: __parse_let, Genshi.KW_PRINT: __parse_print, 
-        Genshi.KW_READ: __parse_read,
+        Genshi.KW_READ: __parse_read, Genshi.KW_NEXT: __parse_next
     }
 
     # dictionary of function pointers for all built-in functions

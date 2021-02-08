@@ -2,6 +2,16 @@
 
 class Genshi():
 
+    # Parser states - used for program flow
+    STATE_NORMAL = 0
+    STATE_HALT = 1
+    STATE_GOTO = 3
+    STATE_LOOP_START = 4
+    STATE_LOOP_NORMAL = 5
+    STATE_LOOP_DONE = 6
+    STATE_GOSUB = 7
+    STATE_RETURN = 8
+
     # Token types
     TT_STRING = 0
     TT_UINT = 1
@@ -17,39 +27,40 @@ class Genshi():
     KW_COS = 15     # cosine
     KW_DATA = 16    # store constants in code, pair with READ
     KW_DIM = 17     # allocate memory for new array
-    KW_END = 18     # end of program
-    KW_EXP = 19     # inverse natural log (e^x)
-    KW_FOR = 20     # for loop start
-    KW_GOSUB = 21   # enter subroutine
-    KW_GOTO = 22    # go to line number
-    KW_IF = 23      # if statement
-    KW_INPUT = 24   # accept user input
-    KW_INT = 25     # round numbers
-    KW_LEFT = 26    # substring starting at left
-    KW_LEN = 27     # length of string
-    KW_LET = 28     # variable declaration
-    KW_LOG = 29     # natural logarithm
-    KW_MID = 30     # substring
-    KW_NEXT = 31    # end for loop block
-    KW_NOT = 32     # logical NOT
-    KW_ON = 33      # go to line number in list given index
-    KW_OR = 34      # logical OR
-    KW_PRINT = 35   # print
-    KW_READ = 36    # read constants from DATA
-    KW_REM = 37     # comment (remark)
-    KW_RETURN = 38  # return from subroutine, used with GOSUB
-    KW_RIGHT = 39   # substring starting at right
-    KW_RND = 40     # random float
-    KW_SGN = 41     # negative=-1, zero=0, positive=1
-    KW_SIN = 42     # sine
-    KW_SPC = 43     # whitespaces
-    KW_SQR = 44     # square root
-    KW_STEP = 45    # increment of FOR loop
-    KW_STR = 46     # convert number to string
-    KW_TAN = 47     # tangent
-    KW_THEN = 48    # IF..THEN
-    KW_TO = 49      # FOR loop
-    KW_XOR = 50     # logical XOR
+    KW_ELSE = 18    # optional else for if statement
+    KW_END = 19     # end of program
+    KW_EXP = 20     # inverse natural log (e^x)
+    KW_FOR = 21     # for loop start
+    KW_GOSUB = 22   # enter subroutine
+    KW_GOTO = 23    # go to line number
+    KW_IF = 24      # if statement
+    KW_INPUT = 25   # accept user input
+    KW_INT = 26     # round numbers
+    KW_LEFT = 27    # substring starting at left
+    KW_LEN = 28     # length of string
+    KW_LET = 29     # variable declaration
+    KW_LOG = 30     # natural logarithm
+    KW_MID = 31     # substring
+    KW_NEXT = 32    # end for loop block
+    KW_NOT = 33     # logical NOT
+    KW_ON = 34      # go to line number in list given index
+    KW_OR = 35      # logical OR
+    KW_PRINT = 36   # print
+    KW_READ = 37    # read constants from DATA
+    KW_REM = 38     # comment (remark)
+    KW_RETURN = 39  # return from subroutine, used with GOSUB
+    KW_RIGHT = 40   # substring starting at right
+    KW_RND = 41     # random float
+    KW_SGN = 42     # negative=-1, zero=0, positive=1
+    KW_SIN = 43     # sine
+    KW_SPC = 44     # whitespaces
+    KW_SQR = 45     # square root
+    KW_STEP = 46    # increment of FOR loop
+    KW_STR = 47     # convert number to string
+    KW_TAN = 48     # tangent
+    KW_THEN = 49    # IF..THEN
+    KW_TO = 50      # FOR loop
+    KW_XOR = 51     # logical XOR
 
     # Symbols (operators or additional syntax)
     SYM_ADD = 70
