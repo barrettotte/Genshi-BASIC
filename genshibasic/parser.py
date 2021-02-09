@@ -33,6 +33,13 @@ class Parser:
     # peek output buffer, return a copy
     def peek_output(self):
         return self.__out_buffer.copy()
+    
+    # dump contents of parser
+    def dump(self):
+        print(f'symbols: {self.__symbols}')
+        print(f'data: {self.__pgm_data}')
+        print(f'output buffer: {self.__out_buffer}')
+        print(f'input buffer: {self.__in_buffer}')
 
     # parse token list and return syntax tree
     def parse(self, tokens, line_no_tok):
@@ -46,7 +53,10 @@ class Parser:
     def __parse_stmt(self):
         k = self.__tok.kind
         if k == Genshi.KW_REM:
-            return (None, None)  # ignore comments
+            return (None, Genshi.STATE_NORMAL)  # ignore comments
+        elif k == Genshi.TT_IDENTIFIER:
+            self.__parse_assign()
+            return (None, Genshi.STATE_NORMAL)
         elif k in self.PARSE_DICT:
             return self.PARSE_DICT[k](self)
         self.__raise('Unexpected statement found')
@@ -114,24 +124,25 @@ class Parser:
         if var not in self.__symbols:
             self.__raise(f"Array '{var[1:]}' is undefined", KeyError)
         dims = self.__get_arr_dim(self.__symbols[var])
+        dim_len = len(dims)
 
-        if dims != len(indices):
+        if dim_len != len(indices):
             self.__raise(f"Invalid access to array '{var[1:]}'", IndexError)
         self.__assert_syntax(Genshi.SYM_RPAREN)
         self.__consume()                                 # )
         self.__assert_syntax(Genshi.SYM_EQ)
         self.__consume()                                 # =
 
-        self.__parse_expr_logic()
+        self.__parse_expr()
         val = self.__op_stack.pop()
 
         try:
-            if dims == 1:
-                self.__symbols[var][indices[0]] = val
-            elif dims == 2:
-                self.__symbols[var][indices[0]][indices[1]] = val
-            elif dims == 3:
-                self.__symbols[var][indices[0]][indices[1]][indices[2]] = val
+            if dim_len == 1:
+                self.__symbols[var][indices[0]-1] = val
+            elif dim_len == 2:
+                self.__symbols[var][indices[0]-1][indices[1]-1] = val
+            elif dim_len == 3:
+                self.__symbols[var][indices[0]-1][indices[1]-1][indices[2]-1] = val
             else:
                 self.__raise('Invalid array dimensions', RuntimeError)
         except IndexError as e:
@@ -162,14 +173,20 @@ class Parser:
         elif dim_len > 3:
             self.__raise('Array declared with too many dimensions')
 
-        arr_init = [0]
-        if dim_len >= 1:
-            arr_init = arr_init * dims[0]  # 1D with I elements
-        if dim_len >= 2:
-            arr_init = arr_init * dims[1]  # 2D with IxJ elements
-        if dim_len == 3:
-            arr_init = arr_init * dims[2]  # 3D with IxJxK elements
+        # note: cannot do [[[0]*i]*j]*k, it copies memory addresses
+        #   https://stackoverflow.com/questions/2397141/how-to-initialize-a-two-dimensional-array-in-python
+        if dim_len == 1:
+            # 1D with I elements
+            arr_init = [0] * (dims[0]+1)
+        elif dim_len == 2:
+            # 2D with IxJ elements
+            arr_init = [[0] * (dims[0]+1) for i in range(dims[1]+1)]
+        elif dim_len == 3:
+            # 3D with IxJxK elements
+            arr_init = [[[0] * (dims[0]+1) for i in range(dims[1]+1)] for j in range(dims[2]+1)]
+
         self.__symbols[var] = arr_init
+
         return (None, Genshi.STATE_NORMAL)
 
     # parse end of program
@@ -276,7 +293,7 @@ class Parser:
 
     # parse factor as an array element
     def __parse_factor_array(self):
-        var = f'@{self.__token.lexeme}'
+        var = f'@{self.__tok.lexeme}'
         self.__consume()                                 # MYARR
         self.__assert_syntax(Genshi.SYM_LPAREN)
         self.__consume()                                 # (
@@ -289,15 +306,15 @@ class Parser:
     # get element from array based on 1-3 indices
     def __get_arr_elem(self, arr, indices):
         dims = len(indices)
-        if dims != self.__get_arr_dim(arr):
+        if dims != len(self.__get_arr_dim(arr)):
             self.__raise('Array dimension mismatch', RuntimeError)
         try:
             if dims == 1:
-                return arr[indices[0]]
+                return arr[indices[0]-1]
             elif dims == 2:
-                return arr[indices[0]][indices[1]]
+                return arr[indices[0]-1][indices[1]-1]
             elif dims == 3:
-                return arr[indices[0]][indices[1]][indices[2]]
+                return arr[indices[0]-1][indices[1]-1][indices[2]-1]
         except IndexError as e:
             self.__raise('Array index out of bounds', e)
 
@@ -472,7 +489,7 @@ class Parser:
         self.__consume()  # PRINT
         if not self.__idx >= len(self.__tokens):
             zones = self.__parse_list([Genshi.SYM_COMMA, Genshi.SYM_SEMICOLON])
-            buffer = ''.join(zones)
+            buffer = ''.join(map(str, zones))
         print(buffer)
         self.__out_buffer.append(buffer)
         return (None, Genshi.STATE_NORMAL)

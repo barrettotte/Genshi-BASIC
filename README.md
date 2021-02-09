@@ -13,12 +13,15 @@ justs interprets an array of strings or a source file.
 
 
 ## Genshi BASIC
-Genshi BASIC has ?? keywords and ? symbolic operators. TODO:
-As stated above, the grammar is based on BASIC version 2.
+Genshi BASIC has 41 keywords. As stated above, the grammar is based on BASIC version 2.
 
-Genshi (原始) means simple in romaji. I chose this name because I stripped out a lot of
+Genshi (原始) means "simple" in romaji. I chose this name because I stripped out a lot of
 functionality to make a simpler BASIC. Arguably this makes it pretty useless, 
 but this is a learning project rather than a useful one.
+
+Its worth noting that **this is not fully tested**. 
+I more or less got a couple programs working correctly and called it a day.
+As I said before, this is a rewrite and I'm honestly very bored of it now.
 
 
 ### Notable differences from BASIC version 2
@@ -44,6 +47,7 @@ Changed:
 Added:
 
 - new keywords - ```XOR```
+- I lost motivation to add anything else cool
 
 
 ## Usage
@@ -62,10 +66,6 @@ TODO: printing, comments, variables, arithmetic, arrays, loops, if, subroutines
 
 ## Language Overview
 TODO: keywords, operators
-
-
-## Problems
-TODO:
 
 
 ## Development

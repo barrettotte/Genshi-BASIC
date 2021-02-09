@@ -66,7 +66,15 @@ class ParserTestSuite(unittest.TestCase):
         self.assertEqual(len(data), 0)
         self.assertEqual(len(out), 0)
         self.assertIn('@A', symbols.keys())
-        self.assertEqual([0, 0, 0], symbols['@A'])
+        self.assertEqual([0, 0, 0, 0], symbols['@A'])
+    
+    def test_DIM_2D(self):
+        (symbols, data, out) = self.__parse('1 DIM A(2,3)')
+        self.assertEqual(len(symbols.keys()), 1)
+        self.assertEqual(len(data), 0)
+        self.assertEqual(len(out), 0)
+        self.assertIn('@A', symbols.keys())
+        self.assertEqual([[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], symbols['@A'])
 
     def test_END(self):
         (symbols, data, out) = self.__parse('1 END')
