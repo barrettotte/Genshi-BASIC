@@ -15,7 +15,7 @@ class Interpeter:
 
     def peek_pgm(self):
         return self.__pgm.copy()
-    
+
     def dump(self):
         print('pgm:')
         for line, stmt in self.__pgm.items():
@@ -23,7 +23,7 @@ class Interpeter:
                 print(tok)
         print(f'lines: {self.__lines}')
         print(f'jump_stack: {self.__jump_stack}')
-        
+
         self.__parser.dump()
 
     def interpret(self, src):
@@ -46,9 +46,19 @@ class Interpeter:
             elif state == Genshi.STATE_LOOP_NORMAL:
                 idx = self.__lines.index(self.__jump_stack.pop())
                 next_line = self.__lines[idx]
-            
+
             elif state == Genshi.STATE_LOOP_DONE:
-                idx = self.__handle_loop_done(idx, jump_to)
+                idx += 1
+                while idx < len(self.__lines):
+                    toks = self.__pgm[self.__lines[idx]]
+                    if len(toks) > 1 and toks[0].kind == Genshi.KW_NEXT \
+                       and toks[1].lexeme == jump_to:
+
+                        idx += 1
+                        if idx < len(self.__lines):
+                            next_line = self.__lines[idx]
+                            break
+                    idx += 1
 
             elif state == Genshi.STATE_GOSUB:
                 if idx + 1 < len(self.__lines):
@@ -83,18 +93,3 @@ class Interpeter:
         self.__lines = list(self.__pgm.keys())
         self.__lines.sort()
         return self.__lines.index(first_line)
-
-    # handle loop done state
-    def __handle_loop_done(self, idx, jump_to):
-        idx += 1
-        while idx < len(self.__lines):
-            toks = self.__pgm[self.__lines[idx]]
-            if len(toks) > 1 and toks[0].kind == Genshi.KW_NEXT \
-                and toks[1].lexeme == jump_to:
-
-                idx += 1
-                if idx < len(self.__lines):
-                    next_line = self.__lines[idx]
-                    break
-            idx += 1
-        return idx

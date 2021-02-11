@@ -2,9 +2,11 @@
 
 from genshibasic.interpreter import Interpeter
 
+
 def main():
     # example_1()
     example_2()
+
 
 # example of assignment, operators, and printing
 def example_1():
@@ -21,6 +23,7 @@ def example_1():
     # A=15.0
     # NOW A=8
 
+
 # example of arrays
 def example_2():
     pgm = [
@@ -36,7 +39,6 @@ def example_2():
     genshi_int = Interpeter()
     genshi_int.interpret(pgm)
     genshi_int.dump()
-
 
 
 if __name__ == '__main__':

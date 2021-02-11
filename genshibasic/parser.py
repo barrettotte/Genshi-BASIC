@@ -33,7 +33,7 @@ class Parser:
     # peek output buffer, return a copy
     def peek_output(self):
         return self.__out_buffer.copy()
-    
+
     # dump contents of parser
     def dump(self):
         print(f'symbols: {self.__symbols}')
@@ -395,13 +395,15 @@ class Parser:
             self.__consume()  # STEP
             self.__parse_expr()
             step = self.__op_stack.pop()
-        
+
         self.__symbols[var] += step  # if step=0, infinite loop
 
         if self.__symbols[var] > end and step > 0:
-            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)  # incrementing loop
+            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)
+            # incrementing loop
         elif self.__symbols[var] < end and step < 0:
-            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)  # decrementing loop
+            return (self.__symbols[var], Genshi.STATE_LOOP_DONE)
+            # decrementing loop
         return (None, Genshi.STATE_LOOP_START)
 
     # parse end of for loop
@@ -414,7 +416,7 @@ class Parser:
         self.__consume()  # GOSUB
         self.__parse_expr()
         return (self.__op_stack.pop(), Genshi.STATE_GOSUB)
-    
+
     # parse a return from subroutine
     def __parse_return(self):
         self.__consume()  # RETURN
@@ -425,13 +427,13 @@ class Parser:
         self.__consume()  # GOTO
         self.__parse_expr()
         return (self.__op_stack.pop(), Genshi.STATE_GOTO)
-    
+
     # parse if-then-else statement
     def __parse_if(self):
         self.__consume()  # IF
         self.__parse_expr_logic()
         cond = self.__op_stack.pop()
-        
+
         self.__assert_syntax(Genshi.KW_THEN)
         self.__consume()  # THEN
 
@@ -454,7 +456,7 @@ class Parser:
     # read in single or list of inputs into variables
     def __parse_input(self):
         self.__consume()  # INPUT
-        
+
         if self.__tok.kind == Genshi.TT_STRING:
             self.__parse_expr_logic()
             prompt = self.__op_stack.pop()
@@ -462,14 +464,14 @@ class Parser:
             self.__consume()  # ;
         else:
             prompt = '?'
-        
+
         var_list = self.__parse_list()
         for var in var_list:
             try:
                 self.__symbols[var] = input(prompt)
-            except Exception as e:
+            except Exception:
                 self.__raise(f'Error reading input into {var}', RuntimeError)
-        return (None, Genshi.STATE_NORMAL)   
+        return (None, Genshi.STATE_NORMAL)
 
     # parse variable declaration
     def __parse_let(self):
@@ -498,11 +500,11 @@ class Parser:
     def __parse_read(self):
         self.__consume()  # READ
         var_list = self.__parse_list([Genshi.SYM_COMMA])
-        
+
         try:
             for var in var_list:
                 self.__symbols[var] = self.__pgm_data.pop(0)
-        except Exception as e:
+        except Exception:
             self.__raise("Error reading data", RuntimeError)
         return (None, Genshi.STATE_NORMAL)
 
@@ -612,9 +614,9 @@ class Parser:
     PARSE_DICT = {
         Genshi.KW_DATA: __parse_data, Genshi.KW_DIM: __parse_dim,
         Genshi.KW_END: __parse_end, Genshi.KW_FOR: __parse_for,
-        Genshi.KW_GOSUB: __parse_gosub, Genshi.KW_GOTO: __parse_goto, 
-        Genshi.KW_IF: __parse_if, Genshi.KW_INPUT: __parse_input, 
-        Genshi.KW_LET: __parse_let, Genshi.KW_PRINT: __parse_print, 
+        Genshi.KW_GOSUB: __parse_gosub, Genshi.KW_GOTO: __parse_goto,
+        Genshi.KW_IF: __parse_if, Genshi.KW_INPUT: __parse_input,
+        Genshi.KW_LET: __parse_let, Genshi.KW_PRINT: __parse_print,
         Genshi.KW_READ: __parse_read, Genshi.KW_NEXT: __parse_next
     }
 
