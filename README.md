@@ -50,22 +50,27 @@ Added:
 - I lost motivation to add anything else cool
 
 
-## Usage
+## Examples
 ```python
-# usage.py
+# Usage of genshi BASIC interpreter
 
-TODO:
+from genshibasic.interpreter import Interpeter
+
+pgm = [
+  '10 REM Example 1',
+  '20 LET A=3+4 * 6/2',
+  '30 PRINT "A="; A',
+  '40 A=8',
+  '50 PRINT "NOW A="; A',
+  '100 END'
+]
+
+genshi_int = Interpeter()
+genshi_int.interpret(pgm)
+    
+# A=15.0
+# NOW A=8
 ```
-
-
-## Genshi BASIC Examples
-TODO: printing, comments, variables, arithmetic, arrays, loops, if, subroutines
-```
-```
-
-
-## Language Overview
-TODO: keywords, operators
 
 
 ## Development
